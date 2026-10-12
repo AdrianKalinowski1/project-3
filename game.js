@@ -29,6 +29,10 @@ const coins = [
   { x: 500, y: 370, width: 20, height: 20, collected: false },
   { x: 700, y: 370, width: 20, height: 20, collected: false }
 ];
+const spikes = [
+  { x: 360, y: groundY - 20, width: 30, height: 20 },
+  { x: 600, y: groundY - 20, width: 30, height: 20 }
+];
 
 const keys = {};
 
@@ -51,6 +55,9 @@ function isOverlapping(a, b) {
   );
 }
 function update() {
+    if (gameOver) {
+    return;
+  }
   // ===== RUCH POZIOMY =====
   if (keys["ArrowLeft"]) {
     player.velocityX -= player.acceleration;
@@ -130,6 +137,12 @@ function update() {
       score++;
     }
   }
+   // kolce
+  for (const spike of spikes) {
+    if (isOverlapping(player, spike)) {
+      gameOver = true;
+    }
+  }
 }
 
 
@@ -158,11 +171,38 @@ function draw() {
       ctx.fill();
     }
   }
+  // kolce
+  ctx.fillStyle = "gray";
+  for (const spike of spikes) {
+    ctx.beginPath();
+    ctx.moveTo(spike.x, spike.y + spike.height);                 // lewy dół
+    ctx.lineTo(spike.x + spike.width / 2, spike.y);              // czubek
+    ctx.lineTo(spike.x + spike.width, spike.y + spike.height);   // prawy dół
+    ctx.closePath();
+    ctx.fill();
+  }
   ctx.fillStyle = player.color;
   ctx.fillRect(player.x, player.y, player.width, player.height);
   ctx.fillStyle = "black";
   ctx.font = "18px Arial";
   ctx.fillText("Use Arrow Keys to Move", 10, 20);
+   // licznik punktów
+  ctx.fillStyle = "black";
+  ctx.font = "20px Arial";
+  ctx.fillText("Punkty: " + score + " / " + coins.length, 20, 60);
+   if (gameOver) {
+    ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = "white";
+    ctx.textAlign = "center";
+    ctx.font = "40px Arial";
+    ctx.fillText("Koniec gry!", canvas.width / 2, canvas.height / 2);
+    ctx.font = "20px Arial";
+    ctx.fillText("Odśwież stronę (F5), aby zagrać jeszcze raz", canvas.width / 2, canvas.height / 2 + 40);
+    ctx.textAlign = "left";
+  }
+  
 }
 
 function gameLoop() {
