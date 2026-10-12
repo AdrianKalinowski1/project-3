@@ -6,8 +6,12 @@ const player = {
   y: 300,
   width: 40,
   height: 50,
-  color: "red"
+  color: "red",
+  velocityX: 0,
+  acceleration: 0.8,
+  friction: 0.85
 };
+
 
 const keys = {};
 
@@ -21,17 +25,22 @@ document.addEventListener("keyup", function (event) {
 
 function update() {
   if (keys["ArrowLeft"]) {
-    player.x -= 5;
+    player.velocityX -= player.acceleration;
   }
   if (keys["ArrowRight"]) {
-    player.x += 5;
+    player.velocityX += player.acceleration;
   }
+
+  player.velocityX *= player.friction;
+  player.x += player.velocityX;
 
   if (player.x < 0) {
     player.x = 0;
+    player.velocityX = 0;
   }
   if (player.x + player.width > canvas.width) {
     player.x = canvas.width - player.width;
+    player.velocityX = 0;
   }
 }
 
@@ -48,3 +57,5 @@ function gameLoop() {
 }
 
 gameLoop();
+
+       
