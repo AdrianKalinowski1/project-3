@@ -17,23 +17,54 @@ const player = {
 };
 const groundY = 400;
 
-const platforms = [
-  { x: 200, y: 330, width: 150, height: 15 },
-  { x: 420, y: 260, width: 150, height: 15 },
-  { x: 620, y: 190, width: 150, height: 15 }
-];
-const coins = [
-  { x: 260, y: 300, width: 20, height: 20, collected: false },
-  { x: 480, y: 230, width: 20, height: 20, collected: false },
-  { x: 680, y: 160, width: 20, height: 20, collected: false },
-  { x: 500, y: 370, width: 20, height: 20, collected: false },
-  { x: 700, y: 370, width: 20, height: 20, collected: false }
-];
-const spikes = [
-  { x: 360, y: groundY - 20, width: 30, height: 20 },
-  { x: 600, y: groundY - 20, width: 30, height: 20 }
-];
+let platforms = [];
+let coins = [];
+let spikes = [];
 
+let currentLevel = 0;
+let gameWon = false;
+
+const levels = [
+  {
+    platforms: [
+      { x: 200, y: 330, width: 150, height: 15 },
+      { x: 420, y: 260, width: 150, height: 15 },
+      { x: 620, y: 190, width: 150, height: 15 }
+    ],
+    coins: [
+      { x: 260, y: 300 },
+      { x: 480, y: 230 },
+      { x: 680, y: 160 },
+      { x: 500, y: 370 },
+      { x: 700, y: 370 }
+    ],
+    spikes: [
+      { x: 360, y: groundY - 20, width: 30, height: 20 },
+      { x: 600, y: groundY - 20, width: 30, height: 20 }
+    ]
+  },
+  {
+    platforms: [
+      { x: 120, y: 325, width: 110, height: 15 },
+      { x: 350, y: 275, width: 100, height: 15 },
+      { x: 470, y: 225, width: 100, height: 15 },
+      { x: 640, y: 175, width: 120, height: 15 }
+    ],
+    coins: [
+      { x: 160, y: 285 },
+      { x: 335, y: 235 },
+      { x: 505, y: 185 },
+      { x: 690, y: 135 },
+      { x: 480, y: 370 }
+    ],
+    spikes: [
+      { x: 250, y: groundY - 20, width: 20, height: 10 },
+      { x: 400, y: groundY - 20, width: 30, height: 20 },
+      { x: 550, y: groundY - 20, width: 30, height: 20 },
+      { x: 700, y: groundY - 20, width: 30, height: 20 }
+    ]
+  }
+];
 const keys = {};
 
 document.addEventListener("keydown", function (event) {
@@ -54,10 +85,45 @@ function isOverlapping(a, b) {
     a.y + a.height > b.y
   );
 }
-function update() {
-    if (gameOver) {
-    return;
+
+function loadLevel(index) {
+  const level = levels[index];
+
+  platforms = level.platforms;
+  spikes = level.spikes;
+  coins = level.coins.map(function (coin) {
+    return { x: coin.x, y: coin.y, width: 20, height: 20, collected: false };
+  });
+
+  player.x = 50;
+  player.y = 300;
+  player.velocityX = 0;
+  player.velocityY = 0;
+}
+
+function nextLevel() {
+  if (currentLevel + 1 >= levels.length) {
+    gameWon = true;
+  } else {
+    currentLevel++;
+    loadLevel(currentLevel);
   }
+}
+
+function restartGame() {
+  score = 0;
+  gameOver = false;
+  gameWon = false;
+  currentLevel = 0;
+  loadLevel(0);
+}
+function update() {
+    if ((gameOver || gameWon) && keys["KeyR"]) {
+      restartGame();
+    }
+
+    if (gameOver || gameWon) {
+    }
   // ===== RUCH POZIOMY =====
   if (keys["ArrowLeft"]) {
     player.velocityX -= player.acceleration;
@@ -143,8 +209,24 @@ function update() {
       gameOver = true;
     }
   }
+    // koniec poziomu
+  if (!gameOver && coins.every(function (coin) { return coin.collected; })) {
+    nextLevel();
+  }
 }
 
+function drawEndScreen(title, subtitle) {
+  ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = "white";
+  ctx.textAlign = "center";
+  ctx.font = "40px Arial";
+  ctx.fillText(title, canvas.width / 2, canvas.height / 2);
+  ctx.font = "20px Arial";
+  ctx.fillText(subtitle, canvas.width / 2, canvas.height / 2 + 40);
+  ctx.textAlign = "left";
+}
 
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -189,18 +271,16 @@ function draw() {
    // licznik punktów
   ctx.fillStyle = "black";
   ctx.font = "20px Arial";
-  ctx.fillText("Punkty: " + score + " / " + coins.length, 20, 60);
-   if (gameOver) {
-    ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    ctx.fillStyle = "white";
-    ctx.textAlign = "center";
-    ctx.font = "40px Arial";
-    ctx.fillText("Koniec gry!", canvas.width / 2, canvas.height / 2);
-    ctx.font = "20px Arial";
-    ctx.fillText("Odśwież stronę (F5), aby zagrać jeszcze raz", canvas.width / 2, canvas.height / 2 + 40);
-    ctx.textAlign = "left";
+   ctx.fillStyle = "black";
+  ctx.font = "20px Arial";
+  ctx.fillText("Punkty: " + score, 20, 60);
+  ctx.fillText("Poziom: " + (currentLevel + 1) + " / " + levels.length, 20, 90);
+   
+    if (gameOver) {
+    drawEndScreen("Koniec gry!", "Naciśnij R, aby zagrać jeszcze raz");
+  }
+  if (gameWon) {
+    drawEndScreen("Wygrałeś!", "Wynik: " + score + " pkt. Naciśnij R, aby zagrać jeszcze raz");
   }
   
 }
@@ -211,6 +291,7 @@ function gameLoop() {
   requestAnimationFrame(gameLoop);
 }
 
+loadLevel(0);
 gameLoop();
 
        
