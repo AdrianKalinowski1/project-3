@@ -1,0 +1,63 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #1b1b2f;
+  color: white;
+  line-height: 1.6;
+}
+
+.hero {
+  text-align: center;
+  padding: 120px 20px;
+  background: linear-gradient(180deg, #4a90d9, #bfe4ff);
+}
+
+.hero h1 {
+  font-size: 4rem;
+  margin: 0 0 20px;
+  text-shadow: 0 4px 0 rgba(0, 0, 0, 0.25);
+}
+
+.tagline {
+  font-size: 1.3rem;
+  max-width: 600px;
+  margin: 0 auto 40px;
+}
+
+.play-button {
+  display: inline-block;
+  padding: 18px 48px;
+  background: #ffcc00;
+  color: #222;
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-decoration: none;
+  border-radius: 50px;
+  box-shadow: 0 6px 0 #c79a00;
+}
+
+.play-button:hover {
+  background: #ffe066;
+}
+.lang-button {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 10;
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  font-size: 1rem;
+  font-weight: bold;
+  border: 2px solid white;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+.lang-button:hover {
+  background: rgba(0, 0, 0, 0.75);
+}

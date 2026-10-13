@@ -1,0 +1,52 @@
+\<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Moja platformówka</title>
+  <link rel="stylesheet" href="landing.css">
+</head>
+<body>
+
+  <button id="lang-button" class="lang-button">EN</button>
+
+  <header class="hero">
+    <h1>NAZWA GRY</h1>
+    <p class="tagline" data-i18n="heroTagline">Skacz, zbieraj monety i omijaj kolce. Dasz radę przejść wszystkie poziomy?</p>
+    <a class="play-button" href="game.html" data-i18n="playButton">Zagraj teraz</a>
+  </header>
+
+  <section class="features">
+    <h2 data-i18n="featuresTitle">Dlaczego warto zagrać?</h2>
+    <div class="cards">
+      <div class="card">
+        <h3 data-i18n="card1Title">Zbieraj monety</h3>
+        <p data-i18n="card1Text">Każdy poziom to kilka monet ukrytych na platformach. Zbierz wszystkie, żeby iść dalej.</p>
+      </div>
+      <div class="card">
+        <h3 data-i18n="card2Title">Unikaj pułapek</h3>
+        <p data-i18n="card2Text">Kolce czekają na ziemi. Jeden błąd i koniec gry, więc skacz uważnie.</p>
+      </div>
+      <div class="card">
+        <h3 data-i18n="card3Title">Kolejne poziomy</h3>
+        <p data-i18n="card3Text">Im dalej, tym trudniej. Pokaż, że potrafisz przejść całą grę.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="controls">
+    <h2 data-i18n="controlsTitle">Jak grać</h2>
+    <ul>
+      <li data-i18n="control1">Strzałki lewo / prawo: ruch</li>
+      <li data-i18n="control2">Spacja albo strzałka w górę: skok</li>
+      <li data-i18n="control3">R: zacznij od nowa po końcu gry</li>
+    </ul>
+  </section>
+
+  <footer>
+    <p data-i18n="footerText">Zrobione przez Adrian, 2026</p>
+  </footer>
+
+  <script src="landing.js"></script>
+</body>
+</html>
