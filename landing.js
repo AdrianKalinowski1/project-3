@@ -13,7 +13,7 @@ const translations = {
     control1: "Strzałki lewo / prawo: ruch",
     control2: "Spacja albo strzałka w górę: skok",
     control3: "R: zacznij od nowa po końcu gry",
-    footerText: "Zrobione przez [Twoje imię], 2026"
+    footerText: "Zrobione przez Adrian, 2026"
   },
   en: {
     heroTagline: "Jump, collect coins and dodge the spikes. Can you beat every level?",
@@ -29,7 +29,7 @@ const translations = {
     control1: "Left / right arrows: move",
     control2: "Space or up arrow: jump",
     control3: "R: restart after the game ends",
-    footerText: "Made by [Your name], 2026"
+    footerText: "Made by Adrian, 2026"
   }
 };
 let currentLanguage = "pl";

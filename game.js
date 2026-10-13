@@ -4,6 +4,45 @@ const ctx = canvas.getContext("2d");
 
 const groundY = 400;
 const maxFallSpeed = 14;
+const langButton = document.getElementById("lang-button");
+
+const button = document.getElementById("lang-button");
+
+const translations = {
+  pl: {
+    points: "Punkty",
+    level: "Poziom",
+    controls: "Strzałki: ruch, spacja: skok",
+    gameOverTitle: "Koniec gry!",
+    gameOverHint: "Naciśnij R, aby zagrać jeszcze raz",
+    wonTitle: "Wygrałeś!",
+    wonHint: "Wynik: {score} pkt. Naciśnij R, aby zagrać jeszcze raz"
+  },
+  en: {
+    points: "Points",
+    level: "Level",
+    controls: "Arrows: move, space: jump",
+    gameOverTitle: "Game Over!",
+    gameOverHint: "Press R to play again",
+    wonTitle: "You won!",
+    wonHint: "Score: {score} pts. Press R to play again"
+  }
+};
+
+let currentLanguage = "pl";
+
+function t(key) {
+  return translations[currentLanguage][key] || key;
+
+}
+
+function setLanguage(language) {
+  currentLanguage = language;
+  localStorage.setItem("language", language);
+  document.documentElement.lang = language;
+  langButton.textContent = language === "pl" ? "EN" : "PL";
+}
+    
 
 // ===== DANE GRY =====
 const player = {
@@ -329,11 +368,11 @@ function drawHud() {
   ctx.fillRect(10, 10, 170, 70);
   ctx.fillStyle = "white";
   ctx.font = "18px Arial";
-  ctx.fillText("Punkty: " + score, 22, 38);
-  ctx.fillText("Poziom: " + (currentLevel + 1) + " / " + levels.length, 22, 64);
+    ctx.fillText(t("points") + score, 22, 38);
+  ctx.fillText(t("level") + (currentLevel + 1) + " / " + levels.length, 22, 64);
 
   ctx.font = "16px Arial";
-  ctx.fillText("Strzałki: ruch, spacja: skok", 20, groundY + 32);
+  ctx.fillText(t("controls"), 20, groundY + 32);
 }
 
 function drawEndScreen(title, subtitle) {
@@ -358,11 +397,11 @@ function draw() {
   drawPlayer();
   drawHud();
 
-  if (gameOver) {
-    drawEndScreen("Koniec gry!", "Naciśnij R, aby zagrać jeszcze raz");
+    if (gameOver) {
+    drawEndScreen(t("gameOverTitle"), t("gameOverHint"));
   }
   if (gameWon) {
-    drawEndScreen("Wygrałeś!", "Wynik: " + score + " pkt. Naciśnij R, aby zagrać jeszcze raz");
+    drawEndScreen(t("wonTitle"), t("wonHint").replace("{score}", score));
   }
 }
 
@@ -372,6 +411,13 @@ function gameLoop() {
   draw();
   requestAnimationFrame(gameLoop);
 }
+langButton.addEventListener("click", function () {
+  setLanguage(currentLanguage === "pl" ? "en" : "pl");
+  langButton.blur();
+});
+
+const savedLanguage = localStorage.getItem("language");
+setLanguage(savedLanguage === "en" ? "en" : "pl");
 
 loadLevel(0);
 gameLoop();
