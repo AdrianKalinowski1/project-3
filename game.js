@@ -4,7 +4,7 @@ const ctx = canvas.getContext("2d");
 
 const groundY = 400;
 const maxFallSpeed = 14;
-
+// PRĘDKOŚĆ OPADANIA I NAJNIZSZY KUNKT PODŁOGA 
 const langButton = document.getElementById("lang-button");
 
 // ===== TŁUMACZENIA =====
@@ -44,7 +44,7 @@ function setLanguage(language) {
   langButton.textContent = language === "pl" ? "EN" : "PL";
 }
 
-// ===== DANE GRY =====
+// ===== DANE GRY ===== (GRACZ)
 const player = {
   x: 50,
   y: 300,
@@ -71,7 +71,7 @@ let bestScore = Number(localStorage.getItem("bestScore")) || 0;
 let currentLevel = 0;
 let gameOver = false;
 let gameWon = false;
-
+//WSPÓŁRZĘDNE CHMUR
 const clouds = [
   { x: 120, y: 70 },
   { x: 420, y: 110 },
@@ -82,12 +82,12 @@ const clouds = [
 function spikeRow(startX, count) {
   const row = [];
   for (let i = 0; i < count; i++) {
-    row.push({ x: startX + i * 30, y: groundY - 20, width: 30, height: 20 });
+    row.push({ x: startX + i * 30, y: groundY - 20, width: 30, height: 20 });//ROZMIAR I WSPOŁRZĘDNE TYCH KOLCÓW 
   }
   return row;
 }
 
-const levels = [
+const levels = [ //WSPOLRZĘDNE TYCH ZMIENNYCH 
   {
     platforms: [
       { x: 200, y: 330, width: 150, height: 15 },
@@ -193,7 +193,7 @@ const levels = [
   }
 ];
 
-// ===== KLAWISZE =====
+// ===== KLAWISZE ===== 
 const keys = {};
 
 document.addEventListener("keydown", function (event) {
@@ -260,7 +260,7 @@ function loadLevel(index) {
     };
   });
 
-  player.x = 50;
+  player.x = 50;//CHYBA POZYCJA STARTOWA GRACZA 
   player.y = 300;
   player.velocityX = 0;
   player.velocityY = 0;
@@ -291,7 +291,7 @@ function saveBestScore() {
   }
 }
 
-// ===== AKTUALIZACJA =====
+// ===== AKTUALIZACJA ===== RUCH LEWO PRAWO 
 function movePlayerHorizontally() {
   if (keys["ArrowLeft"]) {
     player.velocityX -= player.acceleration;
@@ -366,7 +366,7 @@ function movePlayerVertically() {
     }
   }
 }
-
+//RUSZAJĄCE SIE PLATWORMY 
 function movePlatforms() {
   for (const platform of platforms) {
     platform.dx = 0;
@@ -405,14 +405,14 @@ function movePlatforms() {
     }
   }
 }
-
+//PORUSZANIE GRACZA DZIĘKI PLATWORMĄ 
 function carryPlayer() {
   if (player.standingOn) {
     player.x += player.standingOn.dx;
     player.y += player.standingOn.dy;
   }
 }
-
+//RUCH OPONĘTÓW
 function moveEnemies() {
   for (const enemy of enemies) {
     if (enemy.alive) {
@@ -429,7 +429,7 @@ function moveEnemies() {
     }
   }
 }
-
+//ZBIERANIE MONETÓW
 function collectCoins() {
   for (const coin of coins) {
     if (!coin.collected && isOverlapping(player, coin)) {
@@ -438,7 +438,7 @@ function collectCoins() {
     }
   }
 }
-
+//GDY GRACZ WEJDZIE W KOLCE TE JEBANE TO UMIERA I GRA SIE KONCZY 
 function checkSpikes() {
   for (const spike of spikes) {
     if (isOverlapping(player, spike)) {
@@ -446,7 +446,7 @@ function checkSpikes() {
     }
   }
 }
-
+//UMIERANIE I ZABIJANIE WROGÓW 
 function checkEnemies() {
   for (const enemy of enemies) {
     if (enemy.alive && isOverlapping(player, enemy)) {
@@ -464,13 +464,13 @@ function checkEnemies() {
     }
   }
 }
-
+//GDY WSZYSTKIE MONETY ZOSTANĄ ZEBRAMNE KOLEJNY LVL 
 function checkLevelComplete() {
   if (!gameOver && coins.every(function (coin) { return coin.collected; })) {
     nextLevel();
   }
 }
-
+//RESTART PO SKONCZENIU I ZAPISYWANIE NAJLEPSZEGO WYNIKU 
 function update() {
   if ((gameOver || gameWon) && keys["KeyR"]) {
     restartGame();
