@@ -60,7 +60,7 @@ const player = {
   onGround: false,
   facing: 1
 };
-
+let enemies = [];
 let platforms = [];
 let coins = [];
 let spikes = [];
@@ -92,6 +92,9 @@ const levels = [
     spikes: [
       { x: 300, y: groundY - 20, width: 30, height: 20 },
       { x: 750, y: groundY - 20, width: 30, height: 20 }
+    ],
+    enemies: [
+      { minX: 400, maxX: 650, y: groundY - 30, speed: 1.5 }
     ]
   },
   {
@@ -113,6 +116,9 @@ const levels = [
       { x: 400, y: groundY - 20, width: 30, height: 20 },
       { x: 550, y: groundY - 20, width: 30, height: 20 },
       { x: 700, y: groundY - 20, width: 30, height: 20 }
+    ],
+        enemies: [
+      { minX: 440, maxX: 520, y: groundY - 30, speed: 1.2 }
     ]
   }
 ];
@@ -156,7 +162,19 @@ function loadLevel(index) {
   coins = level.coins.map(function (coin) {
     return { x: coin.x, y: coin.y, width: 20, height: 20, collected: false };
   });
-
+  enemies = level.enemies.map(function (enemy) {
+    return {
+      x: enemy.minX,
+      y: enemy.y,
+      width: 30,
+      height: 30,
+      speed: enemy.speed,
+      minX: enemy.minX,
+      maxX: enemy.maxX,
+      direction: 1,
+      alive: true
+    };
+  });
   player.x = 50;
   player.y = 300;
   player.velocityX = 0;
@@ -277,6 +295,40 @@ function checkLevelComplete() {
   }
 }
 
+function moveEnemies() {
+  for (const enemy of enemies) {
+    if (enemy.alive) {
+      enemy.x += enemy.speed * enemy.direction;
+
+      if (enemy.x <= enemy.minX) {
+        enemy.x = enemy.minX;
+        enemy.direction = 1;
+      }
+      if (enemy.x >= enemy.maxX) {
+        enemy.x = enemy.maxX;
+        enemy.direction = -1;
+      }
+    }
+  }
+}
+function checkEnemies() {
+  for (const enemy of enemies) {
+    if (enemy.alive && isOverlapping(player, enemy)) {
+      const feetDepth = player.y + player.height - enemy.y;
+
+      if (player.velocityY > 0 && feetDepth < 20) {
+        // skok na głowę -> wróg pokonany
+        enemy.alive = false;
+        player.velocityY = -8;
+        score += 2;
+      } else {
+        // dotknięcie z boku -> koniec gry
+        gameOver = true;
+      }
+    }
+  }
+}
+
 function update() {
   if ((gameOver || gameWon) && keys["KeyR"]) {
     restartGame();
@@ -285,11 +337,15 @@ function update() {
     return;
   }
 
+  
   movePlayerHorizontally();
   movePlayerVertically();
+  moveEnemies();
   collectCoins();
   checkSpikes();
+  checkEnemies();
   checkLevelComplete();
+  
 }
 
 // ===== RYSOWANIE =====
@@ -387,7 +443,25 @@ function drawEndScreen(title, subtitle) {
   ctx.fillText(subtitle, canvas.width / 2, canvas.height / 2 + 40);
   ctx.textAlign = "left";
 }
+function drawEnemies() {
+  for (const enemy of enemies) {
+    if (enemy.alive) {
+      ctx.fillStyle = "#7b2d8e";
+      ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
 
+      // oczy
+      ctx.fillStyle = "white";
+      ctx.fillRect(enemy.x + 6, enemy.y + 7, 7, 7);
+      ctx.fillRect(enemy.x + enemy.width - 13, enemy.y + 7, 7, 7);
+
+      // źrenice patrzą w stronę ruchu
+      const pupilOffset = enemy.direction === 1 ? 3 : 0;
+      ctx.fillStyle = "black";
+      ctx.fillRect(enemy.x + 6 + pupilOffset, enemy.y + 9, 4, 4);
+      ctx.fillRect(enemy.x + enemy.width - 13 + pupilOffset, enemy.y + 9, 4, 4);
+    }
+  }
+}
 function draw() {
   drawBackground();
   drawGround();
@@ -395,6 +469,7 @@ function draw() {
   drawCoins();
   drawSpikes();
   drawPlayer();
+  drawEnemies();
   drawHud();
 
     if (gameOver) {
