@@ -4,14 +4,15 @@ const ctx = canvas.getContext("2d");
 
 const groundY = 400;
 const maxFallSpeed = 14;
+
 const langButton = document.getElementById("lang-button");
 
-const button = document.getElementById("lang-button");
-
+// ===== TŁUMACZENIA =====
 const translations = {
   pl: {
-    points: "Punkty",
-    level: "Poziom",
+    points: "Punkty: ",
+    level: "Poziom: ",
+    best: "Rekord: ",
     controls: "Strzałki: ruch, spacja: skok",
     gameOverTitle: "Koniec gry!",
     gameOverHint: "Naciśnij R, aby zagrać jeszcze raz",
@@ -19,21 +20,21 @@ const translations = {
     wonHint: "Wynik: {score} pkt. Naciśnij R, aby zagrać jeszcze raz"
   },
   en: {
-    points: "Points",
-    level: "Level",
+    points: "Score: ",
+    level: "Level: ",
+    best: "Best: ",
     controls: "Arrows: move, space: jump",
-    gameOverTitle: "Game Over!",
+    gameOverTitle: "Game over!",
     gameOverHint: "Press R to play again",
-    wonTitle: "You won!",
-    wonHint: "Score: {score} pts. Press R to play again"
+    wonTitle: "You win!",
+    wonHint: "Score: {score}. Press R to play again"
   }
 };
 
 let currentLanguage = "pl";
 
 function t(key) {
-  return translations[currentLanguage][key] || key;
-
+  return translations[currentLanguage][key];
 }
 
 function setLanguage(language) {
@@ -42,7 +43,6 @@ function setLanguage(language) {
   document.documentElement.lang = language;
   langButton.textContent = language === "pl" ? "EN" : "PL";
 }
-    
 
 // ===== DANE GRY =====
 const player = {
@@ -60,11 +60,13 @@ const player = {
   onGround: false,
   facing: 1
 };
-let enemies = [];
+
 let platforms = [];
 let coins = [];
 let spikes = [];
+let enemies = [];
 let score = 0;
+let bestScore = Number(localStorage.getItem("bestScore")) || 0;
 let currentLevel = 0;
 let gameOver = false;
 let gameWon = false;
@@ -117,7 +119,7 @@ const levels = [
       { x: 550, y: groundY - 20, width: 30, height: 20 },
       { x: 700, y: groundY - 20, width: 30, height: 20 }
     ],
-        enemies: [
+    enemies: [
       { minX: 440, maxX: 520, y: groundY - 30, speed: 1.2 }
     ]
   }
@@ -175,6 +177,7 @@ function loadLevel(index) {
       alive: true
     };
   });
+
   player.x = 50;
   player.y = 300;
   player.velocityX = 0;
@@ -196,6 +199,13 @@ function restartGame() {
   gameWon = false;
   currentLevel = 0;
   loadLevel(0);
+}
+
+function saveBestScore() {
+  if (score > bestScore) {
+    bestScore = score;
+    localStorage.setItem("bestScore", bestScore);
+  }
 }
 
 // ===== AKTUALIZACJA =====
@@ -272,6 +282,23 @@ function movePlayerVertically() {
   }
 }
 
+function moveEnemies() {
+  for (const enemy of enemies) {
+    if (enemy.alive) {
+      enemy.x += enemy.speed * enemy.direction;
+
+      if (enemy.x <= enemy.minX) {
+        enemy.x = enemy.minX;
+        enemy.direction = 1;
+      }
+      if (enemy.x >= enemy.maxX) {
+        enemy.x = enemy.maxX;
+        enemy.direction = -1;
+      }
+    }
+  }
+}
+
 function collectCoins() {
   for (const coin of coins) {
     if (!coin.collected && isOverlapping(player, coin)) {
@@ -289,28 +316,6 @@ function checkSpikes() {
   }
 }
 
-function checkLevelComplete() {
-  if (!gameOver && coins.every(function (coin) { return coin.collected; })) {
-    nextLevel();
-  }
-}
-
-function moveEnemies() {
-  for (const enemy of enemies) {
-    if (enemy.alive) {
-      enemy.x += enemy.speed * enemy.direction;
-
-      if (enemy.x <= enemy.minX) {
-        enemy.x = enemy.minX;
-        enemy.direction = 1;
-      }
-      if (enemy.x >= enemy.maxX) {
-        enemy.x = enemy.maxX;
-        enemy.direction = -1;
-      }
-    }
-  }
-}
 function checkEnemies() {
   for (const enemy of enemies) {
     if (enemy.alive && isOverlapping(player, enemy)) {
@@ -329,15 +334,21 @@ function checkEnemies() {
   }
 }
 
+function checkLevelComplete() {
+  if (!gameOver && coins.every(function (coin) { return coin.collected; })) {
+    nextLevel();
+  }
+}
+
 function update() {
   if ((gameOver || gameWon) && keys["KeyR"]) {
     restartGame();
   }
   if (gameOver || gameWon) {
+    saveBestScore();
     return;
   }
 
-  
   movePlayerHorizontally();
   movePlayerVertically();
   moveEnemies();
@@ -345,7 +356,6 @@ function update() {
   checkSpikes();
   checkEnemies();
   checkLevelComplete();
-  
 }
 
 // ===== RYSOWANIE =====
@@ -408,41 +418,6 @@ function drawSpikes() {
   }
 }
 
-function drawPlayer() {
-  ctx.fillStyle = player.color;
-  ctx.fillRect(player.x, player.y, player.width, player.height);
-
-  const eyeX = player.facing === 1 ? player.x + player.width - 14 : player.x + 6;
-  ctx.fillStyle = "white";
-  ctx.fillRect(eyeX, player.y + 10, 8, 8);
-  ctx.fillStyle = "black";
-  ctx.fillRect(eyeX + (player.facing === 1 ? 4 : 0), player.y + 12, 4, 4);
-}
-
-function drawHud() {
-  ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-  ctx.fillRect(10, 10, 170, 70);
-  ctx.fillStyle = "white";
-  ctx.font = "18px Arial";
-    ctx.fillText(t("points") + score, 22, 38);
-  ctx.fillText(t("level") + (currentLevel + 1) + " / " + levels.length, 22, 64);
-
-  ctx.font = "16px Arial";
-  ctx.fillText(t("controls"), 20, groundY + 32);
-}
-
-function drawEndScreen(title, subtitle) {
-  ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  ctx.fillStyle = "white";
-  ctx.textAlign = "center";
-  ctx.font = "40px Arial";
-  ctx.fillText(title, canvas.width / 2, canvas.height / 2);
-  ctx.font = "20px Arial";
-  ctx.fillText(subtitle, canvas.width / 2, canvas.height / 2 + 40);
-  ctx.textAlign = "left";
-}
 function drawEnemies() {
   for (const enemy of enemies) {
     if (enemy.alive) {
@@ -462,17 +437,55 @@ function drawEnemies() {
     }
   }
 }
+
+function drawPlayer() {
+  ctx.fillStyle = player.color;
+  ctx.fillRect(player.x, player.y, player.width, player.height);
+
+  const eyeX = player.facing === 1 ? player.x + player.width - 14 : player.x + 6;
+  ctx.fillStyle = "white";
+  ctx.fillRect(eyeX, player.y + 10, 8, 8);
+  ctx.fillStyle = "black";
+  ctx.fillRect(eyeX + (player.facing === 1 ? 4 : 0), player.y + 12, 4, 4);
+}
+
+function drawHud() {
+  ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+  ctx.fillRect(10, 10, 170, 96);
+  ctx.fillStyle = "white";
+  ctx.font = "18px Arial";
+  ctx.fillText(t("points") + score, 22, 38);
+  ctx.fillText(t("level") + (currentLevel + 1) + " / " + levels.length, 22, 64);
+  ctx.fillText(t("best") + bestScore, 22, 90);
+
+  ctx.font = "16px Arial";
+  ctx.fillText(t("controls"), 20, groundY + 32);
+}
+
+function drawEndScreen(title, subtitle) {
+  ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = "white";
+  ctx.textAlign = "center";
+  ctx.font = "40px Arial";
+  ctx.fillText(title, canvas.width / 2, canvas.height / 2);
+  ctx.font = "20px Arial";
+  ctx.fillText(subtitle, canvas.width / 2, canvas.height / 2 + 40);
+  ctx.textAlign = "left";
+}
+
 function draw() {
   drawBackground();
   drawGround();
   drawPlatforms();
   drawCoins();
   drawSpikes();
-  drawPlayer();
   drawEnemies();
+  drawPlayer();
   drawHud();
 
-    if (gameOver) {
+  if (gameOver) {
     drawEndScreen(t("gameOverTitle"), t("gameOverHint"));
   }
   if (gameWon) {
@@ -486,6 +499,8 @@ function gameLoop() {
   draw();
   requestAnimationFrame(gameLoop);
 }
+
+// ===== START =====
 langButton.addEventListener("click", function () {
   setLanguage(currentLanguage === "pl" ? "en" : "pl");
   langButton.blur();

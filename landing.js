@@ -13,7 +13,9 @@ const translations = {
     control1: "Strzałki lewo / prawo: ruch",
     control2: "Spacja albo strzałka w górę: skok",
     control3: "R: zacznij od nowa po końcu gry",
-    footerText: "Zrobione przez Adrian, 2026"
+    footerText: "Zrobione przez Adrian, 2026",
+    previewTitle: "Wypróbuj od razu",
+    previewStart: "Kliknij, aby zagrać tutaj",
   },
   en: {
     heroTagline: "Jump, collect coins and dodge the spikes. Can you beat every level?",
@@ -29,7 +31,9 @@ const translations = {
     control1: "Left / right arrows: move",
     control2: "Space or up arrow: jump",
     control3: "R: restart after the game ends",
-    footerText: "Made by Adrian, 2026"
+    footerText: "Made by Adrian, 2026",
+    previewTitle: "Try it right now",
+    previewStart: "Click to play here",
   }
 };
 let currentLanguage = "pl";
@@ -57,3 +61,14 @@ const savedLanguage = localStorage.getItem("language");
 if (savedLanguage === "pl" || savedLanguage === "en") {
   setLanguage(savedLanguage);
 }
+const previewFrame = document.getElementById("preview-frame");
+const previewStart = document.getElementById("preview-start");
+
+previewStart.addEventListener("click", function () {
+  const iframe = document.createElement("iframe");
+  iframe.src = "game.html";
+  iframe.title = "Gra";
+  previewFrame.appendChild(iframe);
+  previewStart.remove();
+  iframe.focus();
+});
