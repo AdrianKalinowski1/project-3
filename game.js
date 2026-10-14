@@ -58,7 +58,8 @@ const player = {
   gravity: 0.6,
   jumpPower: -13,
   onGround: false,
-  facing: 1
+  facing: 1,
+  standingOn: null
 };
 
 let platforms = [];
@@ -76,6 +77,15 @@ const clouds = [
   { x: 420, y: 110 },
   { x: 680, y: 60 }
 ];
+
+// rząd kolców na ziemi: startX = gdzie zaczyna się rząd, count = ile kolców
+function spikeRow(startX, count) {
+  const row = [];
+  for (let i = 0; i < count; i++) {
+    row.push({ x: startX + i * 30, y: groundY - 20, width: 30, height: 20 });
+  }
+  return row;
+}
 
 const levels = [
   {
@@ -122,6 +132,64 @@ const levels = [
     enemies: [
       { minX: 440, maxX: 520, y: groundY - 30, speed: 1.2 }
     ]
+  },
+  {
+    // poziom 3: platformy ruszające się w poziomie
+    platforms: [
+      { x: 140, y: 320, width: 90, height: 15 },
+      { x: 260, y: 320, width: 80, height: 15, axis: "x", min: 260, max: 400, speed: 1.4 },
+      { x: 530, y: 290, width: 80, height: 15 }
+    ],
+    coins: [
+      { x: 170, y: 290 },
+      { x: 340, y: 290 },
+      { x: 560, y: 260 },
+      { x: 660, y: 370 },
+      { x: 740, y: 370 }
+    ],
+    spikes: spikeRow(180, 14),
+    enemies: []
+  },
+  {
+    // poziom 4: windy, czyli platformy ruszające się w pionie
+    platforms: [
+      { x: 120, y: 330, width: 90, height: 15 },
+      { x: 270, y: 320, width: 80, height: 15, axis: "y", min: 150, max: 320, speed: 1.2 },
+      { x: 380, y: 150, width: 110, height: 15 },
+      { x: 540, y: 230, width: 90, height: 15 },
+      { x: 670, y: 230, width: 80, height: 15, axis: "y", min: 230, max: 330, speed: 1.0 }
+    ],
+    coins: [
+      { x: 150, y: 300 },
+      { x: 430, y: 120 },
+      { x: 570, y: 200 },
+      { x: 640, y: 370 },
+      { x: 760, y: 370 }
+    ],
+    spikes: spikeRow(250, 4),
+    enemies: [
+      { minX: 430, maxX: 600, y: groundY - 30, speed: 1.3 }
+    ]
+  },
+  {
+    // poziom 5: finał, wszystko razem
+    platforms: [
+      { x: 130, y: 320, width: 80, height: 15 },
+      { x: 260, y: 300, width: 70, height: 15, axis: "x", min: 260, max: 360, speed: 1.6 },
+      { x: 470, y: 300, width: 70, height: 15, axis: "y", min: 200, max: 300, speed: 1.0 },
+      { x: 590, y: 200, width: 170, height: 15 }
+    ],
+    coins: [
+      { x: 160, y: 290 },
+      { x: 330, y: 270 },
+      { x: 500, y: 175 },
+      { x: 610, y: 170 },
+      { x: 730, y: 370 }
+    ],
+    spikes: spikeRow(160, 18),
+    enemies: [
+      { minX: 640, maxX: 720, y: 170, speed: 1.2 }
+    ]
   }
 ];
 
@@ -159,7 +227,21 @@ function drawCircle(x, y, radius) {
 function loadLevel(index) {
   const level = levels[index];
 
-  platforms = level.platforms;
+  platforms = level.platforms.map(function (platform) {
+    return {
+      x: platform.x,
+      y: platform.y,
+      width: platform.width,
+      height: platform.height,
+      axis: platform.axis,
+      min: platform.min,
+      max: platform.max,
+      speed: platform.speed,
+      direction: 1,
+      dx: 0,
+      dy: 0
+    };
+  });
   spikes = level.spikes;
   coins = level.coins.map(function (coin) {
     return { x: coin.x, y: coin.y, width: 20, height: 20, collected: false };
@@ -182,6 +264,7 @@ function loadLevel(index) {
   player.y = 300;
   player.velocityX = 0;
   player.velocityY = 0;
+  player.standingOn = null;
 }
 
 function nextLevel() {
@@ -259,6 +342,7 @@ function movePlayerVertically() {
   player.y += player.velocityY;
 
   player.onGround = false;
+  player.standingOn = null;
 
   // podłoga
   if (player.y + player.height >= groundY) {
@@ -274,11 +358,58 @@ function movePlayerVertically() {
         player.y = platform.y - player.height;
         player.velocityY = 0;
         player.onGround = true;
+        player.standingOn = platform;
       } else if (player.velocityY < 0) {
         player.y = platform.y + platform.height;
         player.velocityY = 0;
       }
     }
+  }
+}
+
+function movePlatforms() {
+  for (const platform of platforms) {
+    platform.dx = 0;
+    platform.dy = 0;
+
+    if (platform.axis === "x") {
+      platform.dx = platform.speed * platform.direction;
+      platform.x += platform.dx;
+
+      if (platform.x <= platform.min) {
+        platform.dx += platform.min - platform.x;
+        platform.x = platform.min;
+        platform.direction = 1;
+      }
+      if (platform.x >= platform.max) {
+        platform.dx += platform.max - platform.x;
+        platform.x = platform.max;
+        platform.direction = -1;
+      }
+    }
+
+    if (platform.axis === "y") {
+      platform.dy = platform.speed * platform.direction;
+      platform.y += platform.dy;
+
+      if (platform.y <= platform.min) {
+        platform.dy += platform.min - platform.y;
+        platform.y = platform.min;
+        platform.direction = 1;
+      }
+      if (platform.y >= platform.max) {
+        platform.dy += platform.max - platform.y;
+        platform.y = platform.max;
+        platform.direction = -1;
+      }
+    }
+  }
+}
+
+function carryPlayer() {
+  if (player.standingOn) {
+    player.x += player.standingOn.dx;
+    player.y += player.standingOn.dy;
   }
 }
 
@@ -349,6 +480,8 @@ function update() {
     return;
   }
 
+  movePlatforms();
+  carryPlayer();
   movePlayerHorizontally();
   movePlayerVertically();
   moveEnemies();
@@ -383,9 +516,10 @@ function drawGround() {
 
 function drawPlatforms() {
   for (const platform of platforms) {
-    ctx.fillStyle = "#6b4f2a";
+    const isMoving = platform.axis === "x" || platform.axis === "y";
+    ctx.fillStyle = isMoving ? "#8a4b1f" : "#6b4f2a";
     ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
-    ctx.fillStyle = "#4caf50";
+    ctx.fillStyle = isMoving ? "#ff9f43" : "#4caf50";
     ctx.fillRect(platform.x, platform.y, platform.width, 5);
   }
 }
