@@ -72,3 +72,26 @@ previewStart.addEventListener("click", function () {
   previewStart.remove();
   iframe.focus();
 });
+const revealElements = document.querySelectorAll(".card, .controls li, .preview-frame");
+
+for (const element of revealElements) {
+  element.classList.add("reveal");
+}
+
+const cards = document.querySelectorAll(".card");
+cards.forEach(function (card, index) {
+  card.style.transitionDelay = index * 0.15 + "s";
+});
+
+const observer = new IntersectionObserver(function (entries) {
+  for (const entry of entries) {
+    if (entry.isIntersecting) {
+      entry.target.classList.add("visible");
+      observer.unobserve(entry.target);
+    }
+  }
+}, { threshold: 0.2 });
+
+for (const element of revealElements) {
+  observer.observe(element);
+}
