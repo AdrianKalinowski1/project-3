@@ -8,7 +8,7 @@ const ctx = canvas.getContext("2d");
 const groundY = 400;
 // Maksymalna prędkość spadania (piksele na klatkę), żeby postać nie przyspieszała w nieskończoność
 const maxFallSpeed = 14;
-// Kruszące się platformy: po ilu klatkach znikają i po ilu wracają (60 klatek = 1 sekunda)
+// Kruszące się platformy: po ilu klatkach od wejścia znikają i po ilu wracają (60 klatek = 1 sekunda)
 const crumbleDelay = 60;
 const respawnDelay = 180;
 // Przycisk zmiany języka z pliku game.html
@@ -237,6 +237,49 @@ const levels = [
     ],
     spikes: spikeRow(150, 20),
     enemies: []
+  },
+  {
+    // poziom 7: ruchoma platforma, potem dwie kruszące się
+    platforms: [
+      { x: 110, y: 330, width: 80, height: 15 },
+      // pozioma platforma jeździ między x = 230 a x = 330
+      { x: 230, y: 310, width: 70, height: 15, axis: "x", min: 230, max: 330, speed: 1.3 },
+      { x: 430, y: 280, width: 70, height: 15, crumble: true },
+      { x: 550, y: 250, width: 70, height: 15, crumble: true },
+      { x: 670, y: 220, width: 100, height: 15 }
+    ],
+    coins: [
+      { x: 140, y: 300 },
+      { x: 455, y: 250 },
+      { x: 575, y: 220 },
+      { x: 700, y: 190 }
+    ],
+    spikes: spikeRow(150, 21),
+    enemies: []
+  },
+  {
+    // poziom 8: finał (kruszące platformy, winda i wróg na ostatniej platformie)
+    platforms: [
+      { x: 100, y: 330, width: 70, height: 15 },
+      { x: 220, y: 310, width: 60, height: 15, crumble: true },
+      // winda: jeździ w pionie między y = 180 a y = 300
+      { x: 340, y: 300, width: 60, height: 15, axis: "y", min: 180, max: 300, speed: 1.0 },
+      { x: 460, y: 170, width: 90, height: 15 },
+      { x: 600, y: 200, width: 60, height: 15, crumble: true },
+      { x: 700, y: 230, width: 90, height: 15 }
+    ],
+    coins: [
+      { x: 120, y: 300 },
+      { x: 240, y: 280 },
+      { x: 485, y: 140 },
+      { x: 620, y: 170 },
+      { x: 745, y: 170 }
+    ],
+    spikes: spikeRow(130, 22),
+    enemies: [
+      // wróg patroluje ostatnią platformę (y = 200, bo platforma jest na 230, a wróg ma 30 wysokości)
+      { minX: 710, maxX: 750, y: 200, speed: 1.2 }
+    ]
   }
 ];
 
@@ -294,7 +337,7 @@ function loadLevel(index) {
       speed: platform.speed,       // prędkość
       direction: 1,                // kierunek jazdy: 1 lub -1
       dx: 0,                       // ile platforma przesunęła się w poziomie w tej klatce
-      dy: 0,
+      dy: 0,                       // ile przesunęła się w pionie w tej klatce
       crumble: platform.crumble,   // czy platforma się kruszy (true albo brak)
       touched: false,              // czy gracz już na niej stanął
       gone: false,                 // czy platforma właśnie zniknęła
@@ -383,7 +426,7 @@ function movePlayerHorizontally() {
 
   // kolizje poziome z platformami
   for (const platform of platforms) {
-      if (!platform.gone && isOverlapping(player, platform)) {
+    if (!platform.gone && isOverlapping(player, platform)) {
       if (player.velocityX > 0) {
         player.x = platform.x - player.width;            // szliśmy w prawo: stajemy przy lewej krawędzi platformy
       } else if (player.velocityX < 0) {
@@ -420,7 +463,7 @@ function movePlayerVertically() {
 
   // kolizje pionowe z platformami
   for (const platform of platforms) {
-    if (isOverlapping(player, platform)) {
+    if (!platform.gone && isOverlapping(player, platform)) {
       if (player.velocityY > 0) {
         // spadaliśmy: lądujemy na górze platformy
         player.y = platform.y - player.height;
@@ -549,6 +592,7 @@ function checkLevelComplete() {
     nextLevel();
   }
 }
+
 // Kruszące się platformy: gdy staniesz, po chwili znikają, a po kilku sekundach wracają
 function updateCrumblingPlatforms() {
   for (const platform of platforms) {
@@ -577,6 +621,7 @@ function updateCrumblingPlatforms() {
     }
   }
 }
+
 // Główna funkcja aktualizacji: wywoływana w każdej klatce, liczy co się dzieje w grze
 function update() {
   // Po końcu gry klawisz R uruchamia grę od nowa
@@ -594,7 +639,7 @@ function update() {
   carryPlayer();              // platforma zabiera gracza
   movePlayerHorizontally();   // ruch w lewo i prawo
   movePlayerVertically();     // skok, grawitacja, lądowanie
-  updateCrumblingPlatforms     
+  updateCrumblingPlatforms(); // kruszące się platformy
   moveEnemies();              // ruszamy wrogów
   collectCoins();             // zbieramy monety
   checkSpikes();              // sprawdzamy kolce
@@ -629,6 +674,7 @@ function drawGround() {
   ctx.fillRect(0, groundY, canvas.width, 8);
 }
 
+// Platformy: zwykłe zielone, ruchome pomarańczowe, kruszące się piaskowe (drżą po wejściu)
 function drawPlatforms() {
   for (const platform of platforms) {
     if (!platform.gone) {                                               // zniknięte platformy nie są rysowane
