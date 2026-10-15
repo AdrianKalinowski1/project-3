@@ -22,7 +22,7 @@ const translations = {
     points: "Punkty: ",
     level: "Poziom: ",
     best: "Rekord: ",
-    controls: "Strzałki: ruch, spacja: skok",
+    controls: "A/D lub strzałki: ruch, spacja: skok",
     mainMenu: "Menu główne",
     gameOverTitle: "Koniec gry!",
     gameOverHint: "Naciśnij R, aby zagrać jeszcze raz",
@@ -34,7 +34,7 @@ const translations = {
     points: "Score: ",
     level: "Level: ",
     best: "Best: ",
-    controls: "Arrows: move, space: jump",
+    controls: "A/D or arrows: move, space: jump",
     mainMenu: "Main menu",
     gameOverTitle: "Game over!",
     gameOverHint: "Press R to play again",
@@ -97,6 +97,13 @@ const clouds = [
   { x: 120, y: 70 },
   { x: 420, y: 110 },
   { x: 680, y: 60 }
+];
+
+const backgroundThemes = [
+  { top: "#4a90d9", bottom: "#bfe4ff", clouds: "rgba(255, 255, 255, 0.8)" },
+  { top: "#e97962", bottom: "#ffd59a", clouds: "rgba(255, 245, 220, 0.8)" },
+  { top: "#342b67", bottom: "#8273b5", clouds: "rgba(230, 225, 255, 0.75)", stars: true },
+  { top: "#329b87", bottom: "#b8e6bd", clouds: "rgba(240, 255, 245, 0.8)" }
 ];
 
 // Rząd kolców na ziemi: startX = gdzie zaczyna się rząd, count = ile kolców
@@ -414,11 +421,11 @@ function saveBestScore() {
 // ===== AKTUALIZACJA =====
 // Ruch gracza w lewo i w prawo (z rozpędzaniem, hamowaniem i kolizjami z bokami platform)
 function movePlayerHorizontally() {
-  if (keys["ArrowLeft"]) {
+  if (keys["ArrowLeft"] || keys["KeyA"]) {
     player.velocityX -= player.acceleration;   // rozpędzamy się w lewo
     player.facing = -1;                        // postać patrzy w lewo
   }
-  if (keys["ArrowRight"]) {
+  if (keys["ArrowRight"] || keys["KeyD"]) {
     player.velocityX += player.acceleration;   // rozpędzamy się w prawo
     player.facing = 1;                         // postać patrzy w prawo
   }
@@ -660,18 +667,26 @@ function update() {
 }
 
 // ===== RYSOWANIE =====
-// Niebo (gradient) i chmury
+// Niebo i chmury; motyw zmienia się co dwa poziomy
 function drawBackground() {
-  // Gradient: płynne przejście kolorów od góry (y = 0) do dołu płótna
+  const theme = backgroundThemes[Math.floor(currentLevel / 2) % backgroundThemes.length];
   const sky = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  sky.addColorStop(0, "#4a90d9");     // niebieski u góry
-  sky.addColorStop(1, "#bfe4ff");     // jasny błękit u dołu
+  sky.addColorStop(0, theme.top);
+  sky.addColorStop(1, theme.bottom);
   ctx.fillStyle = sky;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);   // zamalowujemy całe płótno (to też czyści poprzednią klatkę)
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  ctx.fillStyle = "rgba(255, 255, 255, 0.8)";        // półprzezroczysty biały
+  if (theme.stars) {
+    ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
+    for (let i = 0; i < 32; i++) {
+      const x = (i * 137 + 29) % canvas.width;
+      const y = (i * 71 + 17) % (groundY - 40);
+      drawCircle(x, y, i % 5 === 0 ? 2 : 1);
+    }
+  }
+
+  ctx.fillStyle = theme.clouds;
   for (const cloud of clouds) {
-    // każda chmura to trzy koła nałożone na siebie
     drawCircle(cloud.x, cloud.y, 22);
     drawCircle(cloud.x + 25, cloud.y - 8, 28);
     drawCircle(cloud.x + 55, cloud.y, 22);
