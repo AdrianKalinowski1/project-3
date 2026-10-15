@@ -13,6 +13,7 @@ const crumbleDelay = 60;
 const respawnDelay = 180;
 // Przycisk zmiany języka z pliku game.html
 const langButton = document.getElementById("lang-button");
+const menuButton = document.getElementById("menu-button");
 
 // ===== TŁUMACZENIA =====
 // Wszystkie napisy w grze, osobno dla każdego języka (pl = polski, en = angielski)
@@ -22,6 +23,7 @@ const translations = {
     level: "Poziom: ",
     best: "Rekord: ",
     controls: "Strzałki: ruch, spacja: skok",
+    mainMenu: "Menu główne",
     gameOverTitle: "Koniec gry!",
     gameOverHint: "Naciśnij R, aby zagrać jeszcze raz",
     wonTitle: "Wygrałeś!",
@@ -33,6 +35,7 @@ const translations = {
     level: "Level: ",
     best: "Best: ",
     controls: "Arrows: move, space: jump",
+    mainMenu: "Main menu",
     gameOverTitle: "Game over!",
     gameOverHint: "Press R to play again",
     wonTitle: "You win!",
@@ -54,6 +57,7 @@ function setLanguage(language) {
   localStorage.setItem("language", language);          // zapisujemy wybór w przeglądarce (zostaje po odświeżeniu)
   document.documentElement.lang = language;            // ustawiamy język strony w znaczniku <html>
   langButton.textContent = language === "pl" ? "EN" : "PL"; // przycisk pokazuje język, na który się przełączy
+  menuButton.textContent = t("mainMenu");
 }
 
 // ===== DANE GRY =====
