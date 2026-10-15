@@ -13,19 +13,6 @@
   <header class="hero">
     <h1>Mega parkur</h1>     
     <p class="tagline" data-i18n="heroTagline">Skacz, zbieraj monety i omijaj kolce. Dasz radę przejść wszystkie poziomy?</p>
-    <div class="level-picker">
-      <label for="level-select" data-i18n="levelSelectLabel">Wybierz poziom</label>
-      <select id="level-select" name="level">
-        <option value="1">Poziom 1</option>
-        <option value="2">Poziom 2</option>
-        <option value="3">Poziom 3</option>
-        <option value="4">Poziom 4</option>
-        <option value="5">Poziom 5</option>
-        <option value="6">Poziom 6</option>
-        <option value="7">Poziom 7</option>
-        <option value="8">Poziom 8</option>
-      </select>
-    </div>
     <a class="play-button" href="game.html?level=1" data-i18n="playButton">Zagraj teraz</a>
   </header>
 
@@ -45,6 +32,11 @@
         <p data-i18n="card3Text">Im dalej, tym trudniej. Pokaż, że potrafisz przejść całą grę.</p>
       </div>
     </div>
+  </section>
+  <section class="level-map" aria-labelledby="level-map-title">
+    <h2 id="level-map-title" data-i18n="levelMapTitle">Droga przez poziomy</h2>
+    <p class="level-map-hint" data-i18n="levelMapHint">Przejdź poziom, aby odblokować następny.</p>
+    <div class="level-path" id="level-path" aria-label="Poziomy gry"></div>
   </section>
   <section class="preview">
     <h2 data-i18n="previewTitle">Wypróbuj od razu</h2>

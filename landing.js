@@ -1,8 +1,13 @@
 const translations = {
   pl: {
     heroTagline: "Skacz, zbieraj monety i omijaj kolce. Dasz radę przejść wszystkie poziomy?",
-    levelSelectLabel: "Wybierz poziom",
-    levelOptionPrefix: "Poziom ",
+    levelMapTitle: "Droga przez poziomy",
+    levelMapHint: "Przejdź poziom, aby odblokować następny.",
+    levelLabel: "Poziom ",
+    levelLocked: "Zablokowany",
+    levelUnlocked: "Odblokowany",
+    levelCompleted: "Ukończony",
+    levelSelected: "Wybrany",
     playButton: "Zagraj teraz",
     featuresTitle: "Dlaczego warto zagrać?",
     card1Title: "Zbieraj monety",
@@ -21,8 +26,13 @@ const translations = {
   },
   en: {
     heroTagline: "Jump, collect coins and dodge the spikes. Can you beat every level?",
-    levelSelectLabel: "Choose a level",
-    levelOptionPrefix: "Level ",
+    levelMapTitle: "Level path",
+    levelMapHint: "Complete a level to unlock the next one.",
+    levelLabel: "Level ",
+    levelLocked: "Locked",
+    levelUnlocked: "Unlocked",
+    levelCompleted: "Completed",
+    levelSelected: "Selected",
     playButton: "Play now",
     featuresTitle: "Why play?",
     card1Title: "Collect coins",
@@ -53,11 +63,6 @@ function setLanguage(language) {
     element.textContent = translations[language][key];
   }
 
-  const levelSelect = document.getElementById("level-select");
-  for (const option of levelSelect.options) {
-    option.textContent = translations[language].levelOptionPrefix + option.value;
-  }
-
   const button = document.getElementById("lang-button");
   button.textContent = language === "pl" ? "EN" : "PL";
 }
@@ -65,6 +70,7 @@ function setLanguage(language) {
 const langButton = document.getElementById("lang-button");
 langButton.addEventListener("click", function () {
   setLanguage(currentLanguage === "pl" ? "en" : "pl");
+  updateLevelPath();
 });
 const savedLanguage = localStorage.getItem("language");
 if (savedLanguage === "pl" || savedLanguage === "en") {
@@ -72,20 +78,87 @@ if (savedLanguage === "pl" || savedLanguage === "en") {
 }
 const previewFrame = document.getElementById("preview-frame");
 const previewStart = document.getElementById("preview-start");
-const levelSelect = document.getElementById("level-select");
+const levelPath = document.getElementById("level-path");
 const playButton = document.querySelector(".play-button");
 let previewIframe;
+let selectedLevel = 1;
+const levelCount = 8;
+const unlockedLevelKey = "unlockedLevel";
 
 function getGameUrl() {
-  return "game.html?level=" + encodeURIComponent(levelSelect.value);
+  return "game.html?level=" + selectedLevel;
 }
 
-levelSelect.addEventListener("change", function () {
+function getUnlockedLevel() {
+  const savedLevel = Number(localStorage.getItem(unlockedLevelKey));
+  return Number.isInteger(savedLevel) && savedLevel >= 1 && savedLevel <= levelCount
+    ? savedLevel
+    : 1;
+}
+
+function updateLevelPath() {
+  const unlockedLevel = getUnlockedLevel();
+  levelPath.setAttribute("aria-label", translations[currentLanguage].levelMapTitle);
+  if (selectedLevel > unlockedLevel) {
+    selectedLevel = unlockedLevel;
+  }
+  levelPath.replaceChildren();
+
+  for (let level = 1; level <= levelCount; level++) {
+    const isUnlocked = level <= unlockedLevel;
+    const isSelected = level === selectedLevel;
+    const isCompleted = level < unlockedLevel;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "level-node";
+    button.dataset.level = String(level);
+    button.style.gridColumn = String(level <= 4 ? level : 9 - level);
+    button.style.gridRow = level <= 4 ? "1" : "2";
+    button.disabled = !isUnlocked;
+    button.setAttribute("aria-pressed", String(isSelected));
+    button.setAttribute("aria-label",
+      translations[currentLanguage].levelLabel + level + ", " +
+      (isCompleted
+        ? translations[currentLanguage].levelCompleted
+        : isUnlocked
+          ? translations[currentLanguage].levelUnlocked
+          : translations[currentLanguage].levelLocked) +
+      (isSelected ? ", " + translations[currentLanguage].levelSelected : ""));
+    if (isSelected) {
+      button.classList.add("selected");
+    }
+    if (isCompleted) {
+      button.classList.add("completed");
+    }
+
+    const number = document.createElement("span");
+    number.className = "level-number";
+    number.textContent = isUnlocked ? String(level) : "🔒";
+    const label = document.createElement("span");
+    label.className = "level-label";
+    label.textContent = translations[currentLanguage].levelLabel + level;
+    button.append(number, label);
+    button.addEventListener("click", function () {
+      selectedLevel = level;
+      updateLevelPath();
+      playButton.href = getGameUrl();
+      if (previewIframe) {
+        previewIframe.src = getGameUrl();
+      }
+    });
+    levelPath.appendChild(button);
+  }
+
   playButton.href = getGameUrl();
-  if (previewIframe) {
-    previewIframe.src = getGameUrl();
+}
+
+window.addEventListener("storage", function (event) {
+  if (event.key === unlockedLevelKey) {
+    updateLevelPath();
   }
 });
+
+updateLevelPath();
 
 previewStart.addEventListener("click", function () {
   previewIframe = document.createElement("iframe");
@@ -95,7 +168,7 @@ previewStart.addEventListener("click", function () {
   previewStart.remove();
   previewIframe.focus();
 });
-const revealElements = document.querySelectorAll(".card, .controls li, .preview-frame");
+const revealElements = document.querySelectorAll(".card, .controls li, .preview-frame, .level-path");
 
 for (const element of revealElements) {
   element.classList.add("reveal");

@@ -28,25 +28,6 @@ body {
   margin: 0 auto 40px;
 }
 
-.level-picker {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  margin: 0 auto 28px;
-  font-size: 1.1rem;
-  font-weight: bold;
-}
-
-.level-picker select {
-  padding: 10px 36px 10px 14px;
-  color: #222;
-  font: inherit;
-  border: 2px solid #fff;
-  border-radius: 10px;
-  cursor: pointer;
-}
-
 .play-button {
   display: inline-block;
   padding: 18px 48px;
@@ -144,8 +125,111 @@ footer p {
 .preview {
   max-width: 900px;
   margin: 0 auto;
-  padding: 20px 20px 60px;
+  padding: 0 20px 60px;
   text-align: center;
+}
+
+.level-map {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 44px 20px 30px;
+  text-align: center;
+}
+
+.level-map h2 {
+  margin: 0 0 4px;
+  font-size: 2rem;
+}
+
+.level-map-hint {
+  margin: 0 0 24px;
+  color: #c4c4d8;
+}
+
+.level-path {
+  --path-color: #686887;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: repeat(2, 92px);
+  gap: 28px 8px;
+  max-width: 740px;
+  margin: 0 auto;
+  isolation: isolate;
+  background:
+    linear-gradient(var(--path-color), var(--path-color)) 12.5% 29px / 75% 6px no-repeat,
+    linear-gradient(var(--path-color), var(--path-color)) 12.5% calc(100% - 63px) / 75% 6px no-repeat,
+    linear-gradient(var(--path-color), var(--path-color)) 87.5% 29px / 6px calc(100% - 92px) no-repeat;
+}
+
+.level-node {
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-self: center;
+  gap: 3px;
+  width: 100%;
+  padding: 0;
+  color: white;
+  font: inherit;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.level-node:disabled {
+  color: #aaaabd;
+  cursor: not-allowed;
+}
+
+.level-number {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  color: #222;
+  font-size: 1.35rem;
+  font-weight: bold;
+  background: #ffcc00;
+  border: 4px solid #fff0a3;
+  border-radius: 50%;
+  box-shadow: 0 4px 0 #c79a00;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.level-node.completed .level-number {
+  color: white;
+  background: #36a269;
+  border-color: #a5e7bf;
+  box-shadow: 0 4px 0 #247448;
+}
+
+.level-node:disabled .level-number {
+  color: #c4c4d8;
+  background: #40405a;
+  border-color: #73738d;
+  box-shadow: 0 4px 0 #29293d;
+}
+
+.level-node.selected .level-number {
+  outline: 3px solid white;
+  outline-offset: 3px;
+}
+
+.level-node:not(:disabled):hover .level-number,
+.level-node:focus-visible .level-number {
+  transform: translateY(-4px);
+}
+
+.level-node:focus-visible {
+  outline: none;
+}
+
+.level-label {
+  font-size: 0.8rem;
+  font-weight: bold;
+  white-space: nowrap;
 }
 
 .preview h2 {
@@ -245,9 +329,31 @@ footer p {
     font-size: 1.1rem;
   }
 
-  .level-picker {
-    flex-direction: column;
-    gap: 6px;
+  .level-map {
+    padding: 32px 12px 24px;
+  }
+
+  .level-map h2 {
+    font-size: 1.7rem;
+  }
+
+  .level-path {
+    grid-template-rows: repeat(2, 86px);
+    gap: 22px 2px;
+    background:
+      linear-gradient(var(--path-color), var(--path-color)) 12.5% 29px / 75% 5px no-repeat,
+      linear-gradient(var(--path-color), var(--path-color)) 12.5% calc(100% - 57px) / 75% 5px no-repeat,
+      linear-gradient(var(--path-color), var(--path-color)) 87.5% 29px / 5px calc(100% - 86px) no-repeat;
+  }
+
+  .level-number {
+    width: 48px;
+    height: 48px;
+    font-size: 1.1rem;
+  }
+
+  .level-label {
+    font-size: 0.65rem;
   }
 
   .play-button {

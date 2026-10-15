@@ -375,6 +375,13 @@ function loadLevel(index) {
 
 // Przechodzi do następnego poziomu (albo kończy grę wygraną, jeśli to był ostatni)
 function nextLevel() {
+  const savedUnlockedLevel = Number(localStorage.getItem("unlockedLevel"));
+  const unlockedLevel = Number.isInteger(savedUnlockedLevel) && savedUnlockedLevel >= 1 && savedUnlockedLevel <= levels.length
+    ? savedUnlockedLevel
+    : 1;
+  const nextUnlockedLevel = Math.min(levels.length, Math.max(unlockedLevel, currentLevel + 2));
+  localStorage.setItem("unlockedLevel", String(nextUnlockedLevel));
+
   if (currentLevel + 1 >= levels.length) {
     gameWon = true;                  // nie ma więcej poziomów -> wygrana
   } else {
@@ -830,9 +837,15 @@ const savedLanguage = localStorage.getItem("language");
 setLanguage(savedLanguage === "en" ? "en" : "pl");
 
 const requestedLevel = Number(new URLSearchParams(window.location.search).get("level"));
-startingLevel = Number.isInteger(requestedLevel) && requestedLevel >= 1 && requestedLevel <= levels.length
+const savedUnlockedLevel = Number(localStorage.getItem("unlockedLevel"));
+const unlockedLevel = Number.isInteger(savedUnlockedLevel) && savedUnlockedLevel >= 1 && savedUnlockedLevel <= levels.length
+  ? savedUnlockedLevel
+  : 1;
+startingLevel = Number.isInteger(requestedLevel) && requestedLevel >= 1 && requestedLevel <= unlockedLevel
   ? requestedLevel - 1
-  : 0;
+  : new URLSearchParams(window.location.search).has("level")
+    ? unlockedLevel - 1
+    : 0;
 currentLevel = startingLevel;
 loadLevel(startingLevel);
 gameLoop();     // uruchamiamy pętlę gry
