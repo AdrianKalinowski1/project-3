@@ -28,6 +28,25 @@ body {
   margin: 0 auto 40px;
 }
 
+.level-picker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 0 auto 28px;
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.level-picker select {
+  padding: 10px 36px 10px 14px;
+  color: #222;
+  font: inherit;
+  border: 2px solid #fff;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
 .play-button {
   display: inline-block;
   padding: 18px 48px;
@@ -224,6 +243,11 @@ footer p {
 
   .tagline {
     font-size: 1.1rem;
+  }
+
+  .level-picker {
+    flex-direction: column;
+    gap: 6px;
   }
 
   .play-button {

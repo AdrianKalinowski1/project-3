@@ -13,7 +13,20 @@
   <header class="hero">
     <h1>Mega parkur</h1>     
     <p class="tagline" data-i18n="heroTagline">Skacz, zbieraj monety i omijaj kolce. Dasz radę przejść wszystkie poziomy?</p>
-    <a class="play-button" href="game.html" data-i18n="playButton">Zagraj teraz</a>
+    <div class="level-picker">
+      <label for="level-select" data-i18n="levelSelectLabel">Wybierz poziom</label>
+      <select id="level-select" name="level">
+        <option value="1">Poziom 1</option>
+        <option value="2">Poziom 2</option>
+        <option value="3">Poziom 3</option>
+        <option value="4">Poziom 4</option>
+        <option value="5">Poziom 5</option>
+        <option value="6">Poziom 6</option>
+        <option value="7">Poziom 7</option>
+        <option value="8">Poziom 8</option>
+      </select>
+    </div>
+    <a class="play-button" href="game.html?level=1" data-i18n="playButton">Zagraj teraz</a>
   </header>
 
   <section class="features">

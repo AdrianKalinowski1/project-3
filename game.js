@@ -84,6 +84,7 @@ let score = 0;         // punkty w tej grze
 // Najlepszy wynik: odczytany z pamięci przeglądarki (jeśli go tam nie ma, to 0)
 let bestScore = Number(localStorage.getItem("bestScore")) || 0;
 let currentLevel = 0;  // numer poziomu (0 = pierwszy)
+let startingLevel = 0;
 let gameOver = false;  // czy gracz przegrał
 let gameWon = false;   // czy gracz wygrał całą grę
 
@@ -387,8 +388,8 @@ function restartGame() {
   score = 0;             // zerujemy punkty
   gameOver = false;      // zdejmujemy ekran przegranej
   gameWon = false;       // i ekran wygranej
-  currentLevel = 0;      // wracamy do pierwszego poziomu
-  loadLevel(0);
+  currentLevel = startingLevel;
+  loadLevel(startingLevel);
 }
 
 // Zapisuje najlepszy wynik, jeśli ten jest lepszy od poprzedniego rekordu
@@ -828,5 +829,10 @@ langButton.addEventListener("click", function () {
 const savedLanguage = localStorage.getItem("language");
 setLanguage(savedLanguage === "en" ? "en" : "pl");
 
-loadLevel(0);   // ładujemy pierwszy poziom
+const requestedLevel = Number(new URLSearchParams(window.location.search).get("level"));
+startingLevel = Number.isInteger(requestedLevel) && requestedLevel >= 1 && requestedLevel <= levels.length
+  ? requestedLevel - 1
+  : 0;
+currentLevel = startingLevel;
+loadLevel(startingLevel);
 gameLoop();     // uruchamiamy pętlę gry

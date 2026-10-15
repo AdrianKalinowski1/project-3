@@ -1,6 +1,8 @@
 const translations = {
   pl: {
     heroTagline: "Skacz, zbieraj monety i omijaj kolce. Dasz radę przejść wszystkie poziomy?",
+    levelSelectLabel: "Wybierz poziom",
+    levelOptionPrefix: "Poziom ",
     playButton: "Zagraj teraz",
     featuresTitle: "Dlaczego warto zagrać?",
     card1Title: "Zbieraj monety",
@@ -19,6 +21,8 @@ const translations = {
   },
   en: {
     heroTagline: "Jump, collect coins and dodge the spikes. Can you beat every level?",
+    levelSelectLabel: "Choose a level",
+    levelOptionPrefix: "Level ",
     playButton: "Play now",
     featuresTitle: "Why play?",
     card1Title: "Collect coins",
@@ -49,6 +53,11 @@ function setLanguage(language) {
     element.textContent = translations[language][key];
   }
 
+  const levelSelect = document.getElementById("level-select");
+  for (const option of levelSelect.options) {
+    option.textContent = translations[language].levelOptionPrefix + option.value;
+  }
+
   const button = document.getElementById("lang-button");
   button.textContent = language === "pl" ? "EN" : "PL";
 }
@@ -63,14 +72,28 @@ if (savedLanguage === "pl" || savedLanguage === "en") {
 }
 const previewFrame = document.getElementById("preview-frame");
 const previewStart = document.getElementById("preview-start");
+const levelSelect = document.getElementById("level-select");
+const playButton = document.querySelector(".play-button");
+let previewIframe;
+
+function getGameUrl() {
+  return "game.html?level=" + encodeURIComponent(levelSelect.value);
+}
+
+levelSelect.addEventListener("change", function () {
+  playButton.href = getGameUrl();
+  if (previewIframe) {
+    previewIframe.src = getGameUrl();
+  }
+});
 
 previewStart.addEventListener("click", function () {
-  const iframe = document.createElement("iframe");
-  iframe.src = "game.html";
-  iframe.title = "Gra";
-  previewFrame.appendChild(iframe);
+  previewIframe = document.createElement("iframe");
+  previewIframe.src = getGameUrl();
+  previewIframe.title = "Gra";
+  previewFrame.appendChild(previewIframe);
   previewStart.remove();
-  iframe.focus();
+  previewIframe.focus();
 });
 const revealElements = document.querySelectorAll(".card, .controls li, .preview-frame");
 
