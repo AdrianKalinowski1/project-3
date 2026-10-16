@@ -1,3 +1,4 @@
+/* Centruje płótno gry w oknie i ustawia ciemne tło dookoła. */
 body {
   margin: 0;
   background: #222;
@@ -7,11 +8,13 @@ body {
   min-height: 100vh;
 }
 
+/* Stały rozmiar logiczny gry z jasną ramką. */
 canvas {
   background: #48d4ff;  /* niebo */
   border: 4px solid #fff;
 }
 
+/* W miniaturze usuwa przewijanie i rozciąga stronę na wysokość ramki. */
 body.level-thumbnail {
   width: 100%;
   height: 100vh;
@@ -19,17 +22,20 @@ body.level-thumbnail {
   overflow: hidden;
 }
 
+/* Dopasowuje płótno miniatury do wymiarów małej ramki podglądu. */
 body.level-thumbnail canvas {
   width: 100vw;
   height: 100vh;
   border: 0;
 }
 
+/* Ukrywa elementy sterujące w miniaturach, aby nie zasłaniały planszy. */
 body.level-thumbnail .menu-button,
 body.level-thumbnail .lang-button {
   display: none;
 }
 
+/* Przycisk powrotu pozostaje w prawym górnym rogu ekranu gry. */
 .menu-button {
   position: fixed;
   top: 16px;
@@ -44,10 +50,12 @@ body.level-thumbnail .lang-button {
   border-radius: 20px;
 }
 
+/* Przy najechaniu menu staje się wyraźniejsze. */
 .menu-button:hover {
   background: rgba(0, 0, 0, 0.75);
 }
 
+/* Przycisk zmiany języka przypięty w rogu ekranu. */
 .lang-button {
   position: fixed;
   top: 16px;
@@ -63,6 +71,7 @@ body.level-thumbnail .lang-button {
   cursor: pointer;
 } 
 
+/* Ciemniejsze tło po najechaniu na przycisk języka. */
 .lang-button:hover {
   background: rgba(0, 0, 0, 0.75);
 }

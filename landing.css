@@ -1,7 +1,9 @@
+/* Ujednolica sposób liczenia szerokości elementów razem z marginesami i obramowaniem. */
 * {
   box-sizing: border-box;
 }
 
+/* Główne kolory, krój pisma i odstępy tekstu całej strony. */
 body {
   margin: 0;
   font-family: Arial, sans-serif;
@@ -10,24 +12,28 @@ body {
   line-height: 1.6;
 }
 
+/* Duży nagłówek z tekstem i przyciskiem na niebieskim tle. */
 .hero {
   text-align: center;
   padding: 120px 20px;
   background: linear-gradient(180deg, #4a90d9, #bfe4ff);
 }
 
+/* Główny tytuł strony. */
 .hero h1 {
   font-size: 4rem;
   margin: 0 0 20px;
   text-shadow: 0 4px 0 rgba(0, 0, 0, 0.25);
 }
 
+/* Tekst pod tytułem ograniczony szerokością dla wygodnego czytania. */
 .tagline {
   font-size: 1.3rem;
   max-width: 600px;
   margin: 0 auto 40px;
 }
 
+/* Główny link do gry stylizowany na duży przycisk. */
 .play-button {
   display: inline-block;
   padding: 18px 48px;
@@ -40,9 +46,11 @@ body {
   box-shadow: 0 6px 0 #c79a00;
 }
 
+/* Jaśniejszy kolor przycisku po najechaniu kursorem. */
 .play-button:hover {
   background: #ffe066;
 }
+/* Przycisk zmiany języka pozostaje w rogu podczas przewijania strony. */
 .lang-button {
   position: fixed;
   top: 16px;
@@ -58,9 +66,11 @@ body {
   cursor: pointer;
 }
 
+/* Przy najechaniu przycisk języka staje się ciemniejszy. */
 .lang-button:hover {
   background: rgba(0, 0, 0, 0.75);
 }
+/* Wspólna szerokość i centrowanie dla sekcji .futures oraz .controls. */
 .futures,
 .controls {
   max-width: 1000px;
@@ -69,17 +79,20 @@ body {
   text-align: center;
 }
 
+/* Nagłówki sekcji z kartami i sterowaniem. */
 .futures h2,
 .controls h2 {
   font-size: 2rem;
   margin: 0 0 32px;
 }
 
+/* Układa karty obok siebie i dodaje między nimi odstęp. */
 .cards {
   display: flex;
   gap: 24px;
 }
 
+/* Wygląd pojedynczej karty informacyjnej. */
 .card {
   flex: 1;
   background: rgba(255, 255, 255, 0.1);
@@ -88,15 +101,18 @@ body {
   border-top: 6px solid #ffcc00;
 }
 
+/* Żółty tytuł wyróżniający kartę. */
 .card h3 {
   margin: 0 0 12px;
   color: #ffcc00;
 }
 
+/* Usuwa domyślny margines akapitu w karcie. */
 .card p {
   margin: 0;
 }
 
+/* Instrukcje bez punktorów, wyśrodkowane jako blok tekstu. */
 .controls ul {
   list-style: none;
   padding: 0;
@@ -105,6 +121,7 @@ body {
   text-align: left;
 }
 
+/* Każda instrukcja ma własne tło, zaokrąglenie i odstęp. */
 .controls li {
   background: #2a2a45;
   padding: 14px 20px;
@@ -112,6 +129,7 @@ body {
   margin-bottom: 12px;
 }
 
+/* Stopka z wyciszonym tekstem i linią oddzielającą ją od treści. */
 footer {
   text-align: center;
   padding: 30px 20px;
@@ -119,9 +137,11 @@ footer {
   border-top: 1px solid #2a2a45;
 }
 
+/* Usuwa domyślny odstęp akapitu stopki. */
 footer p {
   margin: 0;
 }
+/* Sekcja podglądu gry z ograniczoną szerokością i odstępem od dołu. */
 .preview {
   max-width: 900px;
   margin: 0 auto;
@@ -129,6 +149,7 @@ footer p {
   text-align: center;
 }
 
+/* Mapa poziomów z nagłówkiem, wskazówką i siatką kart. */
 .level-map {
   max-width: 900px;
   margin: 0 auto;
@@ -136,16 +157,19 @@ footer p {
   text-align: center;
 }
 
+/* Tytuł mapy poziomów. */
 .level-map h2 {
   margin: 0 0 4px;
   font-size: 2rem;
 }
 
+/* Krótka informacja, jak odblokować kolejne poziomy. */
 .level-map-hint {
   margin: 0 0 24px;
   color: #c4c4d8;
 }
 
+/* Cztery kolumny kafelków na szerokich ekranach. */
 .level-path {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -154,6 +178,7 @@ footer p {
   margin: 0 auto;
 }
 
+/* Pojedyncza karta miniatury, z obramowaniem i cieniem. */
 .level-card {
   position: relative;
   min-width: 0;
@@ -166,15 +191,18 @@ footer p {
   transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
+/* Żółta ramka wskazuje poziom aktualnie wybrany przez gracza. */
 .level-card.selected {
   border-color: #ffcc00;
   box-shadow: 0 0 0 2px rgba(255, 204, 0, 0.25), 0 5px 14px rgba(0, 0, 0, 0.2);
 }
 
+/* Zielona ramka oznacza poziom już ukończony. */
 .level-card.completed {
   border-color: #36a269;
 }
 
+/* Miniatura zachowuje proporcje ekranu gry i nie przechwytuje kliknięć. */
 .level-thumbnail-frame {
   display: block;
   width: 100%;
@@ -184,6 +212,7 @@ footer p {
   background: #342b67;
 }
 
+/* Status poziomu jest nakładką w prawym górnym rogu miniatury. */
 .level-status {
   position: absolute;
   top: 8px;
@@ -202,11 +231,13 @@ footer p {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
 }
 
+/* Zielony znacznik wskazuje ukończony poziom. */
 .level-card.completed .level-status {
   color: white;
   background: #36a269;
 }
 
+/* Przycisk pod miniaturą wybiera poziom i rozciąga się na całą kartę. */
 .level-node {
   display: block;
   width: 100%;
@@ -220,15 +251,18 @@ footer p {
   cursor: pointer;
 }
 
+/* Przyciski zablokowanych poziomów są przygaszone i nie sugerują kliknięcia. */
 .level-node:disabled {
   color: #aaaabd;
   cursor: not-allowed;
 }
 
+/* Podświetlenie dostępnego przycisku po najechaniu kursorem. */
 .level-node:not(:disabled):hover {
   background: #383853;
 }
 
+/* Widoczna ramka informuje o fokusu klawiatury dla dostępności. */
 .level-node:focus-visible {
   position: relative;
   z-index: 1;
@@ -236,15 +270,18 @@ footer p {
   outline-offset: -4px;
 }
 
+/* Dostępna karta lekko unosi się po najechaniu kursorem. */
 .level-card:not(.locked):hover {
   transform: translateY(-3px);
 }
 
+/* Nagłówek bezpośrednio nad podglądem gry. */
 .preview h2 {
   font-size: 2rem;
   margin: 0 0 32px;
 }
 
+/* Ramka podglądu dopasowuje się do szerokości i zachowuje proporcje gry. */
 .preview-frame {
   width: 100%;
   max-width: 830px;
@@ -258,12 +295,14 @@ footer p {
   justify-content: center;
 }
 
+/* Gra w ramce wypełnia całe miejsce bez własnego obramowania. */
 .preview-frame iframe {
   width: 100%;
   height: 100%;
   border: 0;
 }
 
+/* Przycisk tworzy grę w ramce dopiero po kliknięciu. */
 .preview-start {
   padding: 16px 40px;
   background: #ffcc00;
@@ -276,9 +315,11 @@ footer p {
   cursor: pointer;
 }
 
+/* Zmienia kolor przycisku podglądu po najechaniu kursorem. */
 .preview-start:hover {
   background: #ffe066;
 }
+/* Animacja wjazdu elementu od dołu z zanikania. */
 @keyframes fade-up {
   from {
     opacity: 0;
@@ -290,6 +331,7 @@ footer p {
   }
 }
 
+/* Animacja delikatnego powiększania głównego przycisku. */
 @keyframes pulse {
   0%, 100% {
     transform: scale(1);
@@ -299,75 +341,94 @@ footer p {
   }
 }
 
+/* Tytuł pojawia się płynnie po załadowaniu strony. */
 .hero h1 {
   animation: fade-up 0.8s ease-out both;
 }
 
+/* Opóźnia pojawienie się krótkiego opisu za tytułem. */
 .tagline {
   animation: fade-up 0.8s ease-out 0.2s both;
 }
 
+/* Przycisk wjeżdża później i pulsuje, by zwrócić uwagę. */
 .play-button {
   animation: fade-up 0.8s ease-out 0.4s both, pulse 2s ease-in-out 1.4s infinite;
 }
 
+/* Po najechaniu wyłącza pulsowanie, żeby przycisk nie poruszał się pod kursorem. */
 .play-button:hover {
   animation: none;
 }
+/* Elementy czekają niewidoczne, dopóki nie zostaną pokazane przez obserwator. */
 .reveal {
   opacity: 0;
   transform: translateY(40px);
   transition: opacity 0.6s ease-out, transform 0.6s ease-out;
 }
 
+/* Klasa dodawana po przewinięciu przywraca widoczność elementu. */
 .reveal.visible {
   opacity: 1;
   transform: none;
 }
+/* Układ strony dla telefonów i wąskich okien przeglądarki. */
 @media (max-width: 700px) {
+  /* Zmniejsza puste miejsce wokół nagłówka na małym ekranie. */
   .hero {
     padding: 80px 20px;
   }
 
+  /* Tytuł nie powinien zajmować całej szerokości telefonu. */
   .hero h1 {
     font-size: 2.5rem;
   }
 
+  /* Zmniejsza tekst opisu, by mieścił się na wąskim ekranie. */
   .tagline {
     font-size: 1.1rem;
   }
 
+  /* Zmniejsza marginesy mapy na telefonach. */
   .level-map {
     padding: 32px 12px 24px;
   }
 
+  /* Dopasowuje tytuł mapy do węższego ekranu. */
   .level-map h2 {
     font-size: 1.7rem;
   }
 
+  /* Pokazuje po dwie karty w wierszu zamiast czterech. */
   .level-path {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
   }
 
+  /* Zmniejsza przycisk gry, aby dobrze mieścił się na telefonie. */
   .play-button {
     font-size: 1.25rem;
     padding: 16px 36px;
   }
 
+  /* Układa karty informacyjne jedna pod drugą zamiast obok siebie. */
   .cards {
     flex-direction: column;
   }
+  /* Na telefonach ukrywa duży podgląd, aby oszczędzić miejsce. */
     .preview {
     display: none;
   }
 }
+/* Szanuje ustawienie systemowe ograniczające animacje. */
 @media (prefers-reduced-motion: reduce) {
+  /* Wyłącza animacje i przejścia dla osób, które wolą mniej ruchu. */
   * {
     animation: none !important;
     transition: none !important;
   }
 
+  /* Nie ukrywa elementów, które normalnie czekają na animację wejścia. */
   .reveal {
     opacity: 1;
     transform: none;

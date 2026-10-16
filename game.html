@@ -1,14 +1,22 @@
 <!DOCTYPE html>
+<!-- Strona gry; domyślny język to polski. -->
 <html lang="pl">
 <head>
+  <!-- Kodowanie obsługujące polskie znaki. -->
   <meta charset="UTF-8">
+  <!-- Tytuł karty przeglądarki. -->
   <title>MY 2D GAME </title>
+  <!-- Style widoku gry oraz miniatur poziomów. -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- target="_top" sprawia, że menu działa również wewnątrz ramki podglądu. -->
   <a id="menu-button" class="menu-button" href="index.html" target="_top">Menu główne</a>
+  <!-- Przycisk zmieniający język napisów w grze. -->
   <button id="lang-button" class="lang-button">EN</button>
+  <!-- Płótno 800 x 450 pikseli, na którym JavaScript rysuje grę. -->
   <canvas id="game" width="800" height="450"></canvas>
+  <!-- Wczytuje logikę gry po utworzeniu elementów strony. -->
   <script src="game.js"></script>
 </body>
 </html>

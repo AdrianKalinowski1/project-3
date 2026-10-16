@@ -3,6 +3,7 @@
 const canvas = document.getElementById("game");
 // "Pędzel" do rysowania w 2D na tym płótnie
 const ctx = canvas.getContext("2d");
+// Parametr URL uruchamia jednorazowe rysowanie planszy zamiast pełnej gry, gdy tworzymy miniaturę.
 const isLevelThumbnail = new URLSearchParams(window.location.search).get("thumbnail") === "1";
 
 // Wysokość podłogi: wszystko poniżej linii y = 400 to ziemia
@@ -14,6 +15,7 @@ const crumbleDelay = 60;
 const respawnDelay = 180;
 // Przycisk zmiany języka z pliku game.html
 const langButton = document.getElementById("lang-button");
+// Link powrotu do menu; jego tekst zmienia się razem z językiem gry.
 const menuButton = document.getElementById("menu-button");
 
 // ===== TŁUMACZENIA =====
@@ -89,6 +91,7 @@ let score = 0;         // punkty w tej grze
 // Najlepszy wynik: odczytany z pamięci przeglądarki (jeśli go tam nie ma, to 0)
 let bestScore = Number(localStorage.getItem("bestScore")) || 0;
 let currentLevel = 0;  // numer poziomu (0 = pierwszy)
+// Zapamiętany poziom startowy, do którego wraca klawisz R po końcu gry.
 let startingLevel = 0;
 let gameOver = false;  // czy gracz przegrał
 let gameWon = false;   // czy gracz wygrał całą grę
@@ -100,6 +103,7 @@ const clouds = [
   { x: 680, y: 60 }
 ];
 
+// Zestawy kolorów tła; poziomy korzystają z nich po kolei, po dwa poziomy na motyw.
 const backgroundThemes = [
   { top: "#4a90d9", bottom: "#bfe4ff", clouds: "rgba(255, 255, 255, 0.8)" },
   { top: "#e97962", bottom: "#ffd59a", clouds: "rgba(255, 245, 220, 0.8)" },
@@ -387,10 +391,12 @@ function loadLevel(index) {
 
 // Przechodzi do następnego poziomu (albo kończy grę wygraną, jeśli to był ostatni)
 function nextLevel() {
+  // Odczytuje dotychczasowy postęp i naprawia go, jeśli zapis jest nieprawidłowy.
   const savedUnlockedLevel = Number(localStorage.getItem("unlockedLevel"));
   const unlockedLevel = Number.isInteger(savedUnlockedLevel) && savedUnlockedLevel >= 1 && savedUnlockedLevel <= levels.length
     ? savedUnlockedLevel
     : 1;
+  // Odblokowuje następny poziom, nie cofając postępu zdobytego wcześniej.
   const nextUnlockedLevel = Math.min(levels.length, Math.max(unlockedLevel, currentLevel + 2));
   localStorage.setItem("unlockedLevel", String(nextUnlockedLevel));
 
@@ -422,6 +428,7 @@ function saveBestScore() {
 // ===== AKTUALIZACJA =====
 // Ruch gracza w lewo i w prawo (z rozpędzaniem, hamowaniem i kolizjami z bokami platform)
 function movePlayerHorizontally() {
+  // Każdy kierunek można wybrać strzałką albo klawiszem A/D.
   if (keys["ArrowLeft"] || keys["KeyA"]) {
     player.velocityX -= player.acceleration;   // rozpędzamy się w lewo
     player.facing = -1;                        // postać patrzy w lewo
@@ -670,7 +677,9 @@ function update() {
 // ===== RYSOWANIE =====
 // Niebo i chmury; motyw zmienia się co dwa poziomy
 function drawBackground() {
+  // Math.floor grupuje poziomy parami; modulo powtarza motywy, gdy skończą się zestawy.
   const theme = backgroundThemes[Math.floor(currentLevel / 2) % backgroundThemes.length];
+  // Tworzy płynne przejście od koloru u góry do koloru u dołu ekranu.
   const sky = ctx.createLinearGradient(0, 0, 0, canvas.height);
   sky.addColorStop(0, theme.top);
   sky.addColorStop(1, theme.bottom);
@@ -678,6 +687,7 @@ function drawBackground() {
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   if (theme.stars) {
+    // Wzory modulo rozkładają gwiazdy po niebie w stałych pozycjach.
     ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
     for (let i = 0; i < 32; i++) {
       const x = (i * 137 + 29) % canvas.width;
@@ -856,13 +866,16 @@ langButton.addEventListener("click", function () {
 const savedLanguage = localStorage.getItem("language");
 setLanguage(savedLanguage === "en" ? "en" : "pl");
 
+// Czyta numer poziomu z adresu i sprawdza zapisany postęp odblokowań.
 const gameUrlParams = new URLSearchParams(window.location.search);
 const requestedLevel = Number(gameUrlParams.get("level"));
 const savedUnlockedLevel = Number(localStorage.getItem("unlockedLevel"));
 const unlockedLevel = Number.isInteger(savedUnlockedLevel) && savedUnlockedLevel >= 1 && savedUnlockedLevel <= levels.length
   ? savedUnlockedLevel
   : 1;
+// Miniatury mogą wyświetlić dowolny poziom; zwykła gra dopuszcza tylko odblokowane.
 const highestAllowedLevel = isLevelThumbnail ? levels.length : unlockedLevel;
+// Nie pozwala otworzyć zablokowanego poziomu przez ręczną zmianę adresu URL.
 startingLevel = Number.isInteger(requestedLevel) && requestedLevel >= 1 && requestedLevel <= highestAllowedLevel
   ? requestedLevel - 1
   : gameUrlParams.has("level") && !isLevelThumbnail
@@ -871,6 +884,7 @@ startingLevel = Number.isInteger(requestedLevel) && requestedLevel >= 1 && reque
 currentLevel = startingLevel;
 loadLevel(startingLevel);
 if (isLevelThumbnail) {
+  // Miniatura rysuje tylko jedną klatkę i ukrywa przyciski sterujące.
   document.body.classList.add("level-thumbnail");
   draw();
 } else {

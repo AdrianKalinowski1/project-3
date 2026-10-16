@@ -1,3 +1,4 @@
+// Napisy używane przez stronę główną; te same klucze występują w obu językach.
 const translations = {
   pl: {
     heroTagline: "Skacz, zbieraj monety i omijaj kolce. Dasz radę przejść wszystkie poziomy?",
@@ -52,45 +53,56 @@ const translations = {
     previewStart: "Click to play here",
   }
 };
+// Język strony używany do wyboru odpowiedniego zestawu napisów.
 let currentLanguage = "pl";
 
+// Zmienia napisy strony, a wybór języka zachowuje po odświeżeniu.
 function setLanguage(language) {
   localStorage.setItem("language", language);
   currentLanguage = language;
   document.documentElement.lang = language;
 
+  // Każdy element z data-i18n dostaje tłumaczenie o pasującym kluczu.
   const elements = document.querySelectorAll("[data-i18n]");
   for (const element of elements) {
     const key = element.dataset.i18n;
     element.textContent = translations[language][key];
   }
 
+  // Przycisk pokazuje język, na który można się przełączyć.
   const button = document.getElementById("lang-button");
   button.textContent = language === "pl" ? "EN" : "PL";
 }
 
 const langButton = document.getElementById("lang-button");
+// Kliknięcie przełącza język i odświeża teksty na kafelkach poziomów.
 langButton.addEventListener("click", function () {
   setLanguage(currentLanguage === "pl" ? "en" : "pl");
   updateLevelPath();
 });
+// Przywraca ostatni zapisany język, jeśli jest jednym z obsługiwanych.
 const savedLanguage = localStorage.getItem("language");
 if (savedLanguage === "pl" || savedLanguage === "en") {
   setLanguage(savedLanguage);
 }
+// Elementy strony potrzebne do tworzenia mapy, uruchamiania podglądu i gry.
 const previewFrame = document.getElementById("preview-frame");
 const previewStart = document.getElementById("preview-start");
 const levelPath = document.getElementById("level-path");
 const playButton = document.querySelector(".play-button");
 let previewIframe;
+// Poziom wybrany na mapie; na początku zaznaczony jest pierwszy.
 let selectedLevel = 1;
+// Liczba poziomów w grze oraz klucz, pod którym zapisano postęp.
 const levelCount = 8;
 const unlockedLevelKey = "unlockedLevel";
 
+// Tworzy adres strony gry dla aktualnie wybranego poziomu.
 function getGameUrl() {
   return "game.html?level=" + selectedLevel;
 }
 
+// Odczytuje najwyższy odblokowany poziom i zabezpiecza wynik przed błędnymi danymi.
 function getUnlockedLevel() {
   const savedLevel = Number(localStorage.getItem(unlockedLevelKey));
   return Number.isInteger(savedLevel) && savedLevel >= 1 && savedLevel <= levelCount
@@ -98,18 +110,21 @@ function getUnlockedLevel() {
     : 1;
 }
 
+// Tworzy kafelki poziomów albo odświeża ich status i tłumaczenia.
 function updateLevelPath() {
   const unlockedLevel = getUnlockedLevel();
   levelPath.setAttribute("aria-label", translations[currentLanguage].levelMapTitle);
   if (selectedLevel > unlockedLevel) {
     selectedLevel = unlockedLevel;
   }
+  // Nie odtwarza iframe przy każdej zmianie postępu lub języka.
   const cardsAlreadyCreated = levelPath.children.length === levelCount;
   if (!cardsAlreadyCreated) {
     levelPath.replaceChildren();
   }
 
   for (let level = 1; level <= levelCount; level++) {
+    // Poziomy niższe od limitu są ukończone; limit sam jest odblokowany.
     const isUnlocked = level <= unlockedLevel;
     const isSelected = level === selectedLevel;
     const isCompleted = level < unlockedLevel;
@@ -117,11 +132,13 @@ function updateLevelPath() {
       ? levelPath.querySelector('[data-level="' + level + '"]')
       : null;
 
+    // Buduje strukturę kafelka tylko raz, aby nie przeładowywać miniatur.
     if (!card) {
       card = document.createElement("div");
       card.dataset.level = String(level);
 
       const thumbnail = document.createElement("iframe");
+      // Ładuje właściwą planszę w trybie nieruchomej miniatury.
       thumbnail.src = "game.html?level=" + level + "&thumbnail=1";
       thumbnail.loading = "lazy";
       thumbnail.tabIndex = -1;
@@ -135,6 +152,7 @@ function updateLevelPath() {
       const button = document.createElement("button");
       button.type = "button";
       button.className = "level-node";
+      // Kliknięcie zaznacza poziom i aktualizuje podgląd, jeśli już działa.
       button.addEventListener("click", function () {
         selectedLevel = level;
         updateSelectedLevel();
@@ -152,11 +170,14 @@ function updateLevelPath() {
       card.classList.add("locked");
     }
     const thumbnail = card.querySelector(".level-thumbnail-frame");
+    // Tytuł miniatury pojawia się po najechaniu kursorem.
     thumbnail.title = translations[currentLanguage].levelPreview + level;
     const status = card.querySelector(".level-status");
     const button = card.querySelector(".level-node");
+    // Zablokowany poziom nie może być wybrany, także klawiaturą.
     button.disabled = !isUnlocked;
     button.setAttribute("aria-pressed", String(isSelected));
+    // Etykieta dostępności łączy numer poziomu z jego statusem.
     button.setAttribute("aria-label",
       translations[currentLanguage].levelLabel + level + ", " +
       (isCompleted
@@ -172,15 +193,18 @@ function updateLevelPath() {
       card.classList.add("completed");
     }
 
+    // Pokazuje znacznik ukończenia, blokadę albo brak dodatkowej ikony.
     const label = translations[currentLanguage].levelLabel.trim() + " " + level;
     status.textContent = isCompleted ? "✓" : isUnlocked ? "" : "🔒";
     button.textContent = label;
   }
 
+  // Link głównego przycisku zawsze otwiera wybrany poziom.
   playButton.href = getGameUrl();
   updateSelectedLevel();
 }
 
+// Aktualizuje wizualne zaznaczenie bez ponownego tworzenia miniatur.
 function updateSelectedLevel() {
   for (const card of levelPath.querySelectorAll(".level-card")) {
     const level = Number(card.dataset.level);
@@ -191,14 +215,17 @@ function updateSelectedLevel() {
   playButton.href = getGameUrl();
 }
 
+// Synchronizuje mapę, gdy postęp zmieni się w innej karcie lub ramce.
 window.addEventListener("storage", function (event) {
   if (event.key === unlockedLevelKey) {
     updateLevelPath();
   }
 });
 
+// Rysuje mapę przy pierwszym wczytaniu strony.
 updateLevelPath();
 
+// Po kliknięciu uruchamia grę w ramce podglądu zamiast przechodzić na inną stronę.
 previewStart.addEventListener("click", function () {
   previewIframe = document.createElement("iframe");
   previewIframe.src = getGameUrl();
@@ -207,17 +234,20 @@ previewStart.addEventListener("click", function () {
   previewStart.remove();
   previewIframe.focus();
 });
+// Elementy, które pojawiają się animacją dopiero po przewinięciu do nich.
 const revealElements = document.querySelectorAll(".card, .controls li, .preview-frame, .level-path");
 
 for (const element of revealElements) {
   element.classList.add("reveal");
 }
 
+// Rozkłada w czasie pojawianie się kart, żeby nie animowały się jednocześnie.
 const cards = document.querySelectorAll(".card");
 cards.forEach(function (card, index) {
   card.style.transitionDelay = index * 0.15 + "s";
 });
 
+// Obserwator wykrywa wejście elementu w ekran i uruchamia jego animację.
 const observer = new IntersectionObserver(function (entries) {
   for (const entry of entries) {
     if (entry.isIntersecting) {
@@ -227,6 +257,7 @@ const observer = new IntersectionObserver(function (entries) {
   }
 }, { threshold: 0.2 });
 
+// Rejestruje obserwację dla każdego elementu, który ma się pojawić przy przewijaniu.
 for (const element of revealElements) {
   observer.observe(element);
 }

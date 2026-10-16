@@ -1,21 +1,29 @@
 <!DOCTYPE html>
+<!-- Ustawia język dokumentu na polski; skrypt może go później zmienić. -->
 <html lang="pl">
 <head>
+  <!-- Ustawia kodowanie znaków, poprawne wyświetlanie polskich liter. -->
   <meta charset="UTF-8">
+  <!-- Dopasowuje szerokość strony do ekranu telefonu lub komputera. -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Tekst widoczny na karcie przeglądarki. -->
   <title>MY 2D GAME </title>
+  <!-- Wczytuje wygląd strony głównej z osobnego pliku CSS. -->
   <link rel="stylesheet" href="landing.css">
 </head>
 <body>
 
+  <!-- Przełącza teksty strony między polskim i angielskim. -->
   <button id="lang-button" class="lang-button">EN</button>
 
+  <!-- Główna sekcja powitalna z tytułem i odnośnikiem do gry. -->
   <header class="hero">
     <h1>Mega parkur</h1>     
     <p class="tagline" data-i18n="heroTagline">Skacz, zbieraj monety i omijaj kolce. Dasz radę przejść wszystkie poziomy?</p>
     <a class="play-button" href="game.html?level=1" data-i18n="playButton">Zagraj teraz</a>
   </header>
 
+  <!-- Karty przedstawiające najważniejsze elementy gry. -->
   <section class="features">
     <h2 data-i18n="featuresTitle">Dlaczego warto zagrać?</h2>
     <div class="cards">
@@ -33,17 +41,20 @@
       </div>
     </div>
   </section>
+  <!-- Mapa pokazuje miniatury, status i wybór dostępnych poziomów. -->
   <section class="level-map" aria-labelledby="level-map-title">
     <h2 id="level-map-title" data-i18n="levelMapTitle">Droga przez poziomy</h2>
     <p class="level-map-hint" data-i18n="levelMapHint">Przejdź poziom, aby odblokować następny.</p>
     <div class="level-path" id="level-path" aria-label="Poziomy gry"></div>
   </section>
+  <!-- Podgląd pozwala uruchomić wybrany poziom bez opuszczania strony. -->
   <section class="preview">
     <h2 data-i18n="previewTitle">Wypróbuj od razu</h2>
     <div class="preview-frame" id="preview-frame">
       <button class="preview-start" id="preview-start" data-i18n="previewStart">Kliknij, aby zagrać tutaj</button>
     </div>
   </section>
+  <!-- Lista sterowania widoczna także dla osób przed rozpoczęciem gry. -->
   <section class="controls">
     <h2 data-i18n="controlsTitle">Jak grać</h2>
     <ul>
@@ -53,10 +64,12 @@
     </ul>
   </section>
 
+  <!-- Stopka strony z informacją o autorze. -->
   <footer>
     <p data-i18n="footerText">Zrobione przez Adrian, 2026</p>
   </footer>
 
+  <!-- Obsługa tłumaczeń, mapy poziomów i podglądu gry. -->
   <script src="landing.js"></script>
 </body>
 </html>
