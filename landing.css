@@ -147,33 +147,75 @@ footer p {
 }
 
 .level-path {
-  --path-color: #686887;
-  position: relative;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  grid-template-rows: repeat(2, 92px);
-  gap: 28px 8px;
-  max-width: 740px;
+  gap: 16px;
+  max-width: 860px;
   margin: 0 auto;
-  isolation: isolate;
-  background:
-    linear-gradient(var(--path-color), var(--path-color)) 12.5% 29px / 75% 6px no-repeat,
-    linear-gradient(var(--path-color), var(--path-color)) 12.5% calc(100% - 63px) / 75% 6px no-repeat,
-    linear-gradient(var(--path-color), var(--path-color)) 87.5% 29px / 6px calc(100% - 92px) no-repeat;
+}
+
+.level-card {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  color: white;
+  background: #292940;
+  border: 2px solid #484866;
+  border-radius: 14px;
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.level-card.selected {
+  border-color: #ffcc00;
+  box-shadow: 0 0 0 2px rgba(255, 204, 0, 0.25), 0 5px 14px rgba(0, 0, 0, 0.2);
+}
+
+.level-card.completed {
+  border-color: #36a269;
+}
+
+.level-thumbnail-frame {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 0;
+  pointer-events: none;
+  background: #342b67;
+}
+
+.level-status {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: grid;
+  place-items: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+  color: #222;
+  font-size: 1rem;
+  font-weight: bold;
+  background: #ffcc00;
+  border: 2px solid white;
+  border-radius: 16px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+.level-card.completed .level-status {
+  color: white;
+  background: #36a269;
 }
 
 .level-node {
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-self: center;
-  gap: 3px;
+  display: block;
   width: 100%;
-  padding: 0;
+  min-height: 42px;
+  padding: 8px 10px;
   color: white;
-  font: inherit;
-  background: transparent;
+  font: bold 0.95rem Arial, sans-serif;
+  text-align: left;
+  background: #292940;
   border: 0;
   cursor: pointer;
 }
@@ -183,53 +225,19 @@ footer p {
   cursor: not-allowed;
 }
 
-.level-number {
-  display: grid;
-  place-items: center;
-  width: 58px;
-  height: 58px;
-  color: #222;
-  font-size: 1.35rem;
-  font-weight: bold;
-  background: #ffcc00;
-  border: 4px solid #fff0a3;
-  border-radius: 50%;
-  box-shadow: 0 4px 0 #c79a00;
-  transition: transform 0.2s ease, background-color 0.2s ease;
-}
-
-.level-node.completed .level-number {
-  color: white;
-  background: #36a269;
-  border-color: #a5e7bf;
-  box-shadow: 0 4px 0 #247448;
-}
-
-.level-node:disabled .level-number {
-  color: #c4c4d8;
-  background: #40405a;
-  border-color: #73738d;
-  box-shadow: 0 4px 0 #29293d;
-}
-
-.level-node.selected .level-number {
-  outline: 3px solid white;
-  outline-offset: 3px;
-}
-
-.level-node:not(:disabled):hover .level-number,
-.level-node:focus-visible .level-number {
-  transform: translateY(-4px);
+.level-node:not(:disabled):hover {
+  background: #383853;
 }
 
 .level-node:focus-visible {
-  outline: none;
+  position: relative;
+  z-index: 1;
+  outline: 3px solid white;
+  outline-offset: -4px;
 }
 
-.level-label {
-  font-size: 0.8rem;
-  font-weight: bold;
-  white-space: nowrap;
+.level-card:not(.locked):hover {
+  transform: translateY(-3px);
 }
 
 .preview h2 {
@@ -338,22 +346,8 @@ footer p {
   }
 
   .level-path {
-    grid-template-rows: repeat(2, 86px);
-    gap: 22px 2px;
-    background:
-      linear-gradient(var(--path-color), var(--path-color)) 12.5% 29px / 75% 5px no-repeat,
-      linear-gradient(var(--path-color), var(--path-color)) 12.5% calc(100% - 57px) / 75% 5px no-repeat,
-      linear-gradient(var(--path-color), var(--path-color)) 87.5% 29px / 5px calc(100% - 86px) no-repeat;
-  }
-
-  .level-number {
-    width: 48px;
-    height: 48px;
-    font-size: 1.1rem;
-  }
-
-  .level-label {
-    font-size: 0.65rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
   }
 
   .play-button {

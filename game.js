@@ -3,6 +3,7 @@
 const canvas = document.getElementById("game");
 // "Pędzel" do rysowania w 2D na tym płótnie
 const ctx = canvas.getContext("2d");
+const isLevelThumbnail = new URLSearchParams(window.location.search).get("thumbnail") === "1";
 
 // Wysokość podłogi: wszystko poniżej linii y = 400 to ziemia
 const groundY = 400;
@@ -855,16 +856,23 @@ langButton.addEventListener("click", function () {
 const savedLanguage = localStorage.getItem("language");
 setLanguage(savedLanguage === "en" ? "en" : "pl");
 
-const requestedLevel = Number(new URLSearchParams(window.location.search).get("level"));
+const gameUrlParams = new URLSearchParams(window.location.search);
+const requestedLevel = Number(gameUrlParams.get("level"));
 const savedUnlockedLevel = Number(localStorage.getItem("unlockedLevel"));
 const unlockedLevel = Number.isInteger(savedUnlockedLevel) && savedUnlockedLevel >= 1 && savedUnlockedLevel <= levels.length
   ? savedUnlockedLevel
   : 1;
-startingLevel = Number.isInteger(requestedLevel) && requestedLevel >= 1 && requestedLevel <= unlockedLevel
+const highestAllowedLevel = isLevelThumbnail ? levels.length : unlockedLevel;
+startingLevel = Number.isInteger(requestedLevel) && requestedLevel >= 1 && requestedLevel <= highestAllowedLevel
   ? requestedLevel - 1
-  : new URLSearchParams(window.location.search).has("level")
+  : gameUrlParams.has("level") && !isLevelThumbnail
     ? unlockedLevel - 1
     : 0;
 currentLevel = startingLevel;
 loadLevel(startingLevel);
-gameLoop();     // uruchamiamy pętlę gry
+if (isLevelThumbnail) {
+  document.body.classList.add("level-thumbnail");
+  draw();
+} else {
+  gameLoop();     // uruchamiamy pętlę gry
+}

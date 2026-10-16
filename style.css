@@ -8,8 +8,26 @@ body {
 }
 
 canvas {
-  background: #87ceeb;  /* niebo */
+  background: #48d4ff;  /* niebo */
   border: 4px solid #fff;
+}
+
+body.level-thumbnail {
+  width: 100%;
+  height: 100vh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+body.level-thumbnail canvas {
+  width: 100vw;
+  height: 100vh;
+  border: 0;
+}
+
+body.level-thumbnail .menu-button,
+body.level-thumbnail .lang-button {
+  display: none;
 }
 
 .menu-button {

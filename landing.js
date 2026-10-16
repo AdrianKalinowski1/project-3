@@ -8,6 +8,7 @@ const translations = {
     levelUnlocked: "Odblokowany",
     levelCompleted: "Ukończony",
     levelSelected: "Wybrany",
+    levelPreview: "Podgląd poziomu ",
     playButton: "Zagraj teraz",
     featuresTitle: "Dlaczego warto zagrać?",
     card1Title: "Zbieraj monety",
@@ -33,6 +34,7 @@ const translations = {
     levelUnlocked: "Unlocked",
     levelCompleted: "Completed",
     levelSelected: "Selected",
+    levelPreview: "Preview of level ",
     playButton: "Play now",
     featuresTitle: "Why play?",
     card1Title: "Collect coins",
@@ -102,18 +104,57 @@ function updateLevelPath() {
   if (selectedLevel > unlockedLevel) {
     selectedLevel = unlockedLevel;
   }
-  levelPath.replaceChildren();
+  const cardsAlreadyCreated = levelPath.children.length === levelCount;
+  if (!cardsAlreadyCreated) {
+    levelPath.replaceChildren();
+  }
 
   for (let level = 1; level <= levelCount; level++) {
     const isUnlocked = level <= unlockedLevel;
     const isSelected = level === selectedLevel;
     const isCompleted = level < unlockedLevel;
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "level-node";
-    button.dataset.level = String(level);
-    button.style.gridColumn = String(level <= 4 ? level : 9 - level);
-    button.style.gridRow = level <= 4 ? "1" : "2";
+    let card = cardsAlreadyCreated
+      ? levelPath.querySelector('[data-level="' + level + '"]')
+      : null;
+
+    if (!card) {
+      card = document.createElement("div");
+      card.dataset.level = String(level);
+
+      const thumbnail = document.createElement("iframe");
+      thumbnail.src = "game.html?level=" + level + "&thumbnail=1";
+      thumbnail.loading = "lazy";
+      thumbnail.tabIndex = -1;
+      thumbnail.setAttribute("aria-hidden", "true");
+      thumbnail.className = "level-thumbnail-frame";
+
+      const status = document.createElement("span");
+      status.className = "level-status";
+      status.setAttribute("aria-hidden", "true");
+
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "level-node";
+      button.addEventListener("click", function () {
+        selectedLevel = level;
+        updateSelectedLevel();
+        if (previewIframe) {
+          previewIframe.src = getGameUrl();
+        }
+      });
+
+      card.append(thumbnail, status, button);
+      levelPath.appendChild(card);
+    }
+
+    card.className = "level-card";
+    if (!isUnlocked) {
+      card.classList.add("locked");
+    }
+    const thumbnail = card.querySelector(".level-thumbnail-frame");
+    thumbnail.title = translations[currentLanguage].levelPreview + level;
+    const status = card.querySelector(".level-status");
+    const button = card.querySelector(".level-node");
     button.disabled = !isUnlocked;
     button.setAttribute("aria-pressed", String(isSelected));
     button.setAttribute("aria-label",
@@ -125,30 +166,28 @@ function updateLevelPath() {
           : translations[currentLanguage].levelLocked) +
       (isSelected ? ", " + translations[currentLanguage].levelSelected : ""));
     if (isSelected) {
-      button.classList.add("selected");
+      card.classList.add("selected");
     }
     if (isCompleted) {
-      button.classList.add("completed");
+      card.classList.add("completed");
     }
 
-    const number = document.createElement("span");
-    number.className = "level-number";
-    number.textContent = isUnlocked ? String(level) : "🔒";
-    const label = document.createElement("span");
-    label.className = "level-label";
-    label.textContent = translations[currentLanguage].levelLabel + level;
-    button.append(number, label);
-    button.addEventListener("click", function () {
-      selectedLevel = level;
-      updateLevelPath();
-      playButton.href = getGameUrl();
-      if (previewIframe) {
-        previewIframe.src = getGameUrl();
-      }
-    });
-    levelPath.appendChild(button);
+    const label = translations[currentLanguage].levelLabel.trim() + " " + level;
+    status.textContent = isCompleted ? "✓" : isUnlocked ? "" : "🔒";
+    button.textContent = label;
   }
 
+  playButton.href = getGameUrl();
+  updateSelectedLevel();
+}
+
+function updateSelectedLevel() {
+  for (const card of levelPath.querySelectorAll(".level-card")) {
+    const level = Number(card.dataset.level);
+    const isSelected = level === selectedLevel;
+    card.classList.toggle("selected", isSelected);
+    card.querySelector(".level-node").setAttribute("aria-pressed", String(isSelected));
+  }
   playButton.href = getGameUrl();
 }
 
