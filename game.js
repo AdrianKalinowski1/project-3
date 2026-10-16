@@ -93,6 +93,7 @@ let bestScore = Number(localStorage.getItem("bestScore")) || 0;
 let currentLevel = 0;  // numer poziomu (0 = pierwszy)
 // Zapamiętany poziom startowy, do którego wraca klawisz R po końcu gry.
 let startingLevel = 0;
+let levelStartingScore = 0; // wynik na początku poziomu pozwala policzyć punkty zdobyte tylko na nim.
 let gameOver = false;  // czy gracz przegrał
 let gameWon = false;   // czy gracz wygrał całą grę
 
@@ -387,10 +388,21 @@ function loadLevel(index) {
   player.velocityX = 0;          // zerujemy prędkości, żeby nie "dojechał" z poprzedniego poziomu
   player.velocityY = 0;
   player.standingOn = null;      // na starcie nie stoi na żadnej platformie
+  levelStartingScore = score;    // zapisujemy wynik wejściowy, aby później wyliczyć rekord tego poziomu.
 }
 
 // Przechodzi do następnego poziomu (albo kończy grę wygraną, jeśli to był ostatni)
 function nextLevel() {
+  const completedLevel = currentLevel + 1; // zamienia indeks zaczynający się od zera na numer poziomu dla pamięci.
+  const levelScore = score - levelStartingScore; // oblicza punkty zdobyte od rozpoczęcia właśnie ukończonego poziomu.
+  const levelBestScoreKey = "levelBestScore_" + completedLevel; // tworzy osobny klucz localStorage dla rekordu poziomu.
+  const savedLevelBestScore = localStorage.getItem(levelBestScoreKey); // odczytuje poprzedni zapis rekordu, aby wykryć jego brak.
+  const previousLevelBestScore = Number(savedLevelBestScore); // zamienia zapis tekstowy na liczbę do porównania.
+  if (savedLevelBestScore === null || !Number.isFinite(previousLevelBestScore) || levelScore > previousLevelBestScore) { // zapisuje wynik, gdy rekordu brakuje, jest błędny lub nowy wynik jest lepszy.
+    localStorage.setItem(levelBestScoreKey, String(levelScore)); // zachowuje najlepszy wynik w tym konkretnym poziomie.
+  } // zamyka warunek aktualizowania rekordu.
+  localStorage.setItem("levelCoins_" + completedLevel, String(coins.length)); // zapisuje liczbę monet zebraną przy ukończeniu poziomu.
+
   // Odczytuje dotychczasowy postęp i naprawia go, jeśli zapis jest nieprawidłowy.
   const savedUnlockedLevel = Number(localStorage.getItem("unlockedLevel"));
   const unlockedLevel = Number.isInteger(savedUnlockedLevel) && savedUnlockedLevel >= 1 && savedUnlockedLevel <= levels.length
@@ -836,7 +848,9 @@ function draw() {
   drawSpikes();
   drawEnemies();
   drawPlayer();
-  drawHud();
+  if (!isLevelThumbnail) { // pomija nieczytelny panel gry w małych miniaturach poziomów.
+    drawHud(); // zostawia licznik punktów, poziomu i sterowania w normalnej grze.
+  }
 
   if (gameOver) {
     drawEndScreen(t("gameOverTitle"), t("gameOverHint"));

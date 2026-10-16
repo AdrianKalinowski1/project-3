@@ -241,14 +241,37 @@ footer p {
 .level-node {
   display: block;
   width: 100%;
-  min-height: 42px;
+  min-height: 42px; /* zachowuje wygodną wysokość przycisku, nawet gdy nie ma statystyk. */
   padding: 8px 10px;
   color: white;
-  font: bold 0.95rem Arial, sans-serif;
+  font: bold 0.95rem Arial, sans-serif; /* ustawia czytelną, pogrubioną czcionkę nazwy poziomu. */
   text-align: left;
   background: #292940;
   border: 0;
   cursor: pointer;
+}
+
+/* Nazwa poziomu zajmuje osobny wiersz nad jego wynikami. */
+.level-name { /* wybiera pierwszy wiersz w przycisku poziomu. */
+  display: block; /* łamie nazwę do nowego wiersza. */
+}
+
+/* Szczegóły ukończenia są mniejsze od nazwy, ale nadal czytelne. */
+.level-details { /* wybiera wiersz z monetami i rekordem. */
+  display: block; /* umieszcza statystyki pod nazwą poziomu. */
+  margin-top: 5px; /* oddziela statystyki od tytułu poziomu. */
+  padding: 5px 7px; /* tworzy wyraźny obszar wokół wyników. */
+  color: #ffdf70; /* wyróżnia wyniki ciepłym, kontrastowym kolorem. */
+  background: #1d1d30; /* odcina wyniki od tła przycisku. */
+  border-radius: 6px; /* zaokrągla tło wyników. */
+  font-size: 0.8rem; /* powiększa statystyki, aby były czytelne na kafelku. */
+  line-height: 1.5; /* rozdziela wiersz monet od wiersza rekordu. */
+  font-weight: normal; /* odróżnia szczegóły od pogrubionej nazwy poziomu. */
+  white-space: pre-line; /* zamienia znak nowej linii tekstu w widoczny podział wiersza. */
+}
+
+.level-details:empty { /* dopasowuje pusty wiersz szczegółów na poziomach bez wyników. */
+  display: none; /* usuwa pustą belkę z kafelków nieukończonych poziomów. */
 }
 
 /* Przyciski zablokowanych poziomów są przygaszone i nie sugerują kliknięcia. */

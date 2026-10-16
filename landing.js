@@ -10,6 +10,9 @@ const translations = {
     levelCompleted: "Ukończony",
     levelSelected: "Wybrany",
     levelPreview: "Podgląd poziomu ",
+    levelCoins: "Monety: ", // początek opisu zebranych monet w języku polskim.
+    levelBestScore: "Rekord: ", // początek opisu najlepszego wyniku poziomu po polsku.
+    levelPointsUnit: " pkt", // skrót jednostki punktów po polsku.
     playButton: "Zagraj teraz",
     featuresTitle: "Dlaczego warto zagrać?",
     card1Title: "Zbieraj monety",
@@ -36,6 +39,9 @@ const translations = {
     levelCompleted: "Completed",
     levelSelected: "Selected",
     levelPreview: "Preview of level ",
+    levelCoins: "Coins: ", // angielski początek opisu liczby zebranych monet.
+    levelBestScore: "Best: ", // angielski początek opisu najlepszego wyniku poziomu.
+    levelPointsUnit: " pts", // angielski skrót jednostki punktów.
     playButton: "Play now",
     featuresTitle: "Why play?",
     card1Title: "Collect coins",
@@ -152,6 +158,11 @@ function updateLevelPath() {
       const button = document.createElement("button");
       button.type = "button";
       button.className = "level-node";
+      const levelName = document.createElement("span"); // etykieta z numerem poziomu pozostaje czytelna na kafelku.
+      levelName.className = "level-name"; // klasa pozwala wystylizować nazwę niezależnie od statystyk.
+      const levelDetails = document.createElement("span"); // osobny wiersz pokazuje wynik i monety ukończonego poziomu.
+      levelDetails.className = "level-details"; // klasa nadaje statystykom mniejszy, pomocniczy wygląd.
+      button.append(levelName, levelDetails); // umieszcza nazwę i statystyki wewnątrz przycisku poziomu.
       // Kliknięcie zaznacza poziom i aktualizuje podgląd, jeśli już działa.
       button.addEventListener("click", function () {
         selectedLevel = level;
@@ -174,6 +185,9 @@ function updateLevelPath() {
     thumbnail.title = translations[currentLanguage].levelPreview + level;
     const status = card.querySelector(".level-status");
     const button = card.querySelector(".level-node");
+    const savedCoins = Number(localStorage.getItem("levelCoins_" + level)); // odczytuje monety zapisane przy ukończeniu tego poziomu.
+    const savedBestScore = Number(localStorage.getItem("levelBestScore_" + level)); // odczytuje najlepszy wynik zapisany dla tego poziomu.
+    const hasSavedStats = Number.isInteger(savedCoins) && savedCoins > 0 && Number.isFinite(savedBestScore); // odróżnia nowe statystyki od starych zapisów postępu.
     // Zablokowany poziom nie może być wybrany, także klawiaturą.
     button.disabled = !isUnlocked;
     button.setAttribute("aria-pressed", String(isSelected));
@@ -194,9 +208,14 @@ function updateLevelPath() {
     }
 
     // Pokazuje znacznik ukończenia, blokadę albo brak dodatkowej ikony.
-    const label = translations[currentLanguage].levelLabel.trim() + " " + level;
-    status.textContent = isCompleted ? "✓" : isUnlocked ? "" : "🔒";
-    button.textContent = label;
+    const label = translations[currentLanguage].levelLabel.trim() + " " + level; // tworzy nazwę poziomu w aktualnym języku.
+    status.textContent = isCompleted ? "✓" : isUnlocked ? "" : "🔒"; // zachowuje ikonę ukończenia albo kłódki na miniaturze.
+    button.querySelector(".level-name").textContent = label; // wpisuje nazwę poziomu do pierwszego wiersza kafelka.
+    const levelDetailsText = isCompleted && hasSavedStats // statystyki pokazujemy tylko dla ukończonego poziomu z zapisanymi danymi.
+      ? translations[currentLanguage].levelCoins + savedCoins + "/" + savedCoins + "\n" + translations[currentLanguage].levelBestScore + savedBestScore + translations[currentLanguage].levelPointsUnit // umieszcza monety i rekord w osobnych, czytelnych wierszach.
+      : isCompleted ? translations[currentLanguage].levelCompleted : ""; // dla starych zapisów wyświetla samo ukończenie, a w innych przypadkach pusty tekst.
+    button.querySelector(".level-details").textContent = levelDetailsText; // pokazuje szczegóły pod nazwą poziomu.
+    button.setAttribute("aria-label", button.getAttribute("aria-label") + (isCompleted && hasSavedStats ? ", " + levelDetailsText : "")); // udostępnia zapisane wyniki czytnikom ekranu.
   }
 
   // Link głównego przycisku zawsze otwiera wybrany poziom.
