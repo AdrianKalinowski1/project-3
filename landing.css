@@ -41,10 +41,114 @@ body::after { /* umieszcza drugą chmurkę po przeciwnej stronie strony. */
 
 /* Duży nagłówek z tekstem i przyciskiem na niebieskim tle. */
 .hero {
+  position: relative; /* tworzy niezależny układ dla ilustracji umieszczonej pod przyciskiem startu. */
+  overflow: hidden; /* przycina ozdobną scenę na krawędziach nagłówka. */
   text-align: center;
   padding: 120px 20px;
   background: linear-gradient(180deg, #4a90d9, #bfe4ff);
 }
+
+/* Rysuje mały podgląd kolorowych elementów gry pod przyciskiem startu. */
+.hero-scene { /* wyznacza obszar ilustracji, aby elementy pozostały w jednej scenie. */
+  position: relative; /* pozwala ustawiać platformy, postać i monety względem sceny. */
+  width: min(100%, 520px); /* ogranicza szerokość ilustracji, ale dopasowuje ją do telefonu. */
+  height: 150px; /* rezerwuje miejsce na trzy poziomy platform i unoszącą się postać. */
+  margin: 34px auto -48px; /* centruje ilustrację i ogranicza pustą przestrzeń pod nagłówkiem. */
+  border-bottom: 3px solid rgba(255, 255, 255, 0.3); /* podkreśla dolną krawędź planszy. */
+  background: radial-gradient(ellipse at 50% 110%, rgba(255, 255, 255, 0.26), transparent 68%); /* dodaje miękką poświatę za elementami ilustracji. */
+} /* kończy obszar sceny dekoracyjnej. */
+
+/* Rysuje brązowe platformy z zieloną trawą na górnej krawędzi. */
+.scene-platform { /* wspólny kształt platform widocznych w ilustracji. */
+  position: absolute; /* umieszcza platformę w wybranym miejscu sceny. */
+  height: 15px; /* nadaje platformie proporcje podobne do tych w grze. */
+  border-radius: 4px; /* łagodzi narożniki pikselowych platform. */
+  background: #6b4f2a; /* koloruje korpus platformy na brązowo. */
+  box-shadow: inset 0 5px 0 #4caf50, 0 5px 0 rgba(32, 70, 58, 0.22); /* dodaje zieloną trawę i lekki cień. */
+} /* kończy wspólny wygląd platform w ilustracji. */
+
+.scene-platform-one { /* pozycjonuje pierwszą platformę po lewej stronie sceny. */
+  left: 4%; /* zostawia niewielki margines przy brzegu ilustracji. */
+  bottom: 22px; /* umieszcza ją najniżej, jako początek parkuru. */
+  width: 29%; /* dobiera długość platformy do szerokości sceny. */
+} /* kończy pozycjonowanie lewej platformy. */
+
+.scene-platform-two { /* unosi środkową platformę ponad trasą. */
+  left: 36%; /* ustawia ją za lewą platformą. */
+  bottom: 61px; /* tworzy widoczny stopień do przeskoczenia. */
+  width: 27%; /* zapewnia miejsce na monetę i lądowanie postaci. */
+} /* kończy pozycjonowanie środkowej platformy. */
+
+.scene-platform-three { /* umieszcza końcową platformę po prawej stronie. */
+  right: 4%; /* zachowuje odstęp od krawędzi ilustracji. */
+  bottom: 33px; /* ustawia ją pomiędzy wysokością lewej i środkowej platformy. */
+  width: 27%; /* domyka miniaturową trasę parkuru. */
+} /* kończy pozycjonowanie prawej platformy. */
+
+/* Pokazuje czerwonego bohatera przeskakującego między platformami. */
+.scene-player { /* nadaje postaci czytelny, prosty kształt. */
+  position: absolute; /* umożliwia umieszczenie bohatera nad platformą. */
+  z-index: 1; /* rysuje postać przed elementami tła sceny. */
+  left: 46%; /* ustawia bohatera nad środkową platformą. */
+  bottom: 76px; /* unosi postać tak, jakby skakała po trasie. */
+  width: 27px; /* ustala szerokość czerwonej postaci. */
+  height: 34px; /* ustala wysokość czerwonej postaci. */
+  border: 3px solid #fff; /* dodaje jasny obrys widoczny na niebieskim tle. */
+  border-radius: 7px 7px 4px 4px; /* nadaje postaci rozpoznawalny, miękki kształt. */
+  background: #e94b4b; /* używa czerwonego koloru bohatera z planszy. */
+  box-shadow: 0 5px 0 rgba(90, 40, 40, 0.22); /* dodaje lekki cień pod postacią. */
+  animation: hero-hop 1.8s ease-in-out infinite; /* delikatnie podskakuje, aby scena wyglądała na żywą. */
+} /* kończy wygląd głównego bohatera ilustracji. */
+
+.scene-player::after { /* dodaje białe oko, by nawiązać do postaci w grze. */
+  content: ""; /* tworzy mały element oka wewnątrz postaci. */
+  position: absolute; /* ustawia oko względem czerwonego ciała. */
+  top: 7px; /* umieszcza oko w górnej części głowy. */
+  right: 3px; /* kieruje wzrok bohatera w prawo. */
+  width: 7px; /* ustala szerokość białka oka. */
+  height: 7px; /* ustala wysokość białka oka. */
+  border-radius: 50%; /* zamienia białko w małe okrągłe oko. */
+  background: #fff; /* zapewnia widoczny kontrast oka. */
+  box-shadow: inset -2px 0 #222; /* dodaje ciemną źrenicę patrzącą w prawo. */
+} /* kończy rysowanie oka bohatera. */
+
+/* Rysuje złote monety na wysokości skoku. */
+.scene-coin { /* wspólny kształt kolekcjonowanych monet. */
+  position: absolute; /* umieszcza monetę nad wybraną platformą. */
+  width: 18px; /* nadaje mały rozmiar pasujący do miniaturowej sceny. */
+  height: 18px; /* zachowuje okrągły kształt monety. */
+  border: 3px solid #d4a017; /* tworzy ciemniejszą, złotą krawędź. */
+  border-radius: 50%; /* zamienia monetę w okrąg. */
+  background: #ffe066; /* wypełnia środek jasnym złotym kolorem. */
+  box-shadow: 0 0 12px rgba(255, 224, 102, 0.65); /* dodaje subtelną poświatę zbieranej monety. */
+} /* kończy wspólny wygląd monet w ilustracji. */
+
+.scene-coin-one { /* umieszcza monetę nad lewą częścią trasy. */
+  left: 27%; /* ustawia ją przed środkową platformą. */
+  bottom: 70px; /* zawiesza ją nad pierwszym skokiem. */
+} /* kończy pozycjonowanie pierwszej monety. */
+
+.scene-coin-two { /* umieszcza monetę w dalszej części parkuru. */
+  right: 20%; /* ustawia ją nad prawą stroną sceny. */
+  bottom: 86px; /* daje jej inną wysokość dla urozmaicenia ilustracji. */
+  transform: scale(0.8); /* odróżnia wielkość drugiej monety od pierwszej. */
+} /* kończy pozycjonowanie drugiej monety. */
+
+/* Rysuje niewielkie kolce jako przypomnienie o przeszkodach. */
+.scene-spikes { /* tworzy rząd trójkątnych kolców na dole sceny. */
+  position: absolute; /* umieszcza przeszkodę przy dolnej platformie. */
+  right: 30%; /* zostawia miejsce przed kolcami na bezpieczne lądowanie. */
+  bottom: 9px; /* ustawia podstawę kolców przy dolnej krawędzi sceny. */
+  width: 44px; /* rozciąga kolce na krótki odcinek trasy. */
+  height: 18px; /* nadaje kolcom niski, czytelny kształt. */
+  background: #747487; /* odróżnia przeszkodę od zielonych platform. */
+  clip-path: polygon(0 100%, 16% 0, 32% 100%, 50% 0, 68% 100%, 84% 0, 100% 100%); /* wycina z tła trzy trójkątne kolce. */
+} /* kończy wygląd kolców w ilustracji. */
+
+@keyframes hero-hop { /* definiuje spokojny ruch podskakującego bohatera. */
+  0%, 100% { transform: translateY(0); } /* zaczyna i kończy animację w pozycji wyjściowej. */
+  50% { transform: translateY(-12px); } /* unosi postać w połowie skoku. */
+} /* kończy animację podskoku bohatera. */
 
 /* Główny tytuł strony. */
 .hero h1 {
