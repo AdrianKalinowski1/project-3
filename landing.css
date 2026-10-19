@@ -8,9 +8,36 @@ body {
   margin: 0;
   font-family: Arial, sans-serif;
   background: #1b1b2f;
+  background-image: radial-gradient(circle at 12% 18%, rgba(255, 204, 0, 0.12) 0 6px, transparent 7px), radial-gradient(circle at 12% 18%, transparent 0 9px, rgba(255, 204, 0, 0.12) 10px 11px, transparent 12px), radial-gradient(circle at 88% 29%, rgba(255, 255, 255, 0.2) 0 1px, transparent 2px), radial-gradient(circle at 78% 72%, rgba(255, 255, 255, 0.18) 0 1px, transparent 2px), radial-gradient(circle at 24% 84%, rgba(255, 255, 255, 0.16) 0 1px, transparent 2px); /* dodaje ledwo widoczne monety i gwiazdki w tle strony. */
+  background-attachment: fixed; /* utrzymuje ozdobne punkty nieruchomo podczas przewijania. */
+  position: relative; /* tworzy kontekst dla dekoracyjnych chmurek umieszczonych pod treścią. */
+  isolation: isolate; /* pozwala umieścić ozdoby za treścią bez chowania ich za tłem strony. */
   color: white;
   line-height: 1.6;
 }
+
+body::before, /* przypisuje pierwszą chmurkę do wirtualnego elementu przed treścią strony. */
+body::after { /* przypisuje drugą chmurkę do wirtualnego elementu za treścią strony. */
+  content: ""; /* generuje pusty element używany wyłącznie jako ozdoba. */
+  position: fixed; /* pozostawia chmurki na miejscu podczas przewijania. */
+  z-index: -1; /* umieszcza chmurki za wszystkimi elementami strony. */
+  width: 150px; /* ustala szerokość chmurki. */
+  height: 64px; /* ustala wysokość chmurki. */
+  opacity: 0.09; /* sprawia, że ozdoba jest delikatna i nie konkuruje z tekstem. */
+  pointer-events: none; /* nie pozwala ozdobie przechwytywać kliknięć ani dotyku. */
+  background: radial-gradient(ellipse at 50% 78%, #bfe4ff 0 39%, transparent 41%), radial-gradient(circle at 27% 57%, #bfe4ff 0 20%, transparent 22%), radial-gradient(circle at 48% 42%, #bfe4ff 0 26%, transparent 28%), radial-gradient(circle at 70% 58%, #bfe4ff 0 19%, transparent 21%); /* łączy miękkie kształty w sylwetkę chmurki. */
+} /* kończy wspólny wygląd chmurek dekoracyjnych. */
+
+body::before { /* umieszcza pierwszą chmurkę przy lewej krawędzi strony. */
+  top: 24vh; /* ustawia chmurkę w górnej części widoku. */
+  left: max(12px, calc((100vw - 1180px) / 2)); /* utrzymuje chmurkę w widocznym obszarze dużego ekranu. */
+} /* kończy pozycjonowanie pierwszej chmurki. */
+
+body::after { /* umieszcza drugą chmurkę po przeciwnej stronie strony. */
+  right: max(12px, calc((100vw - 1180px) / 2)); /* zachowuje symetryczny odstęp od prawej krawędzi. */
+  bottom: 18vh; /* ustawia chmurkę w dolnej części widoku. */
+  transform: scale(0.8); /* zmniejsza drugą chmurkę, aby dekoracje były zróżnicowane. */
+} /* kończy pozycjonowanie drugiej chmurki. */
 
 /* Duży nagłówek z tekstem i przyciskiem na niebieskim tle. */
 .hero {
@@ -397,6 +424,11 @@ footer p {
 }
 /* Układ strony dla telefonów i wąskich okien przeglądarki. */
 @media (max-width: 700px) {
+  body::before, /* wskazuje pierwszą chmurkę do osłabienia na telefonie. */
+  body::after { /* wskazuje drugą chmurkę do osłabienia na telefonie. */
+    opacity: 0.055; /* zachowuje klimat dekoracji, lecz daje pierwszeństwo treści mobilnej. */
+  } /* kończy mobilne osłabienie dekoracyjnych chmurek. */
+
   /* Zmniejsza puste miejsce wokół nagłówka na małym ekranie. */
   .hero {
     padding: 80px 20px;
