@@ -48,6 +48,68 @@ body::after { /* umieszcza drugą chmurkę po przeciwnej stronie strony. */
   background: linear-gradient(180deg, #4a90d9, #bfe4ff);
 }
 
+/* Grupuje ustawienia koloru bohatera i motywu tła w czytelnym panelu. */
+.appearance-settings { /* wyróżnia personalizację między nagłówkiem a opisem gry. */
+  width: min(calc(100% - 40px), 900px); /* ogranicza szerokość panelu i zostawia marginesy na małym ekranie. */
+  margin: 32px auto 0; /* centruje panel i oddziela go od ilustracji nagłówka. */
+  padding: 24px; /* dodaje odstęp wokół ustawień. */
+  text-align: center; /* centruje nagłówek i opis panelu. */
+  background: linear-gradient(145deg, rgba(57, 57, 91, 0.96), rgba(38, 38, 62, 0.96)); /* nadaje panelowi głębię, pasującą do strony. */
+  border: 1px solid rgba(255, 224, 102, 0.28); /* delikatnie obrysowuje sekcję ustawień. */
+  border-radius: 20px; /* dopasowuje kształt panelu do kart strony. */
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18); /* oddziela panel od dekoracyjnego tła. */
+} /* kończy główny panel ustawień wyglądu. */
+
+.appearance-settings h2 { /* ustawia tytuł personalizacji. */
+  margin: 0 0 4px; /* ogranicza odstęp tytułu od opisu. */
+  font-size: 1.7rem; /* wyróżnia nagłówek sekcji ustawień. */
+} /* kończy styl nagłówka ustawień. */
+
+.appearance-settings > p { /* stylizuje krótkie opisy pod tytułem ustawień. */
+  margin: 4px 0; /* zachowuje ciasne odstępy między wskazówkami. */
+  color: #c8c8dc; /* utrzymuje czytelny, spokojny kontrast tekstu. */
+} /* kończy styl opisów ustawień. */
+
+.appearance-theme-hint { /* wyróżnia informację o rotacji motywów podczas gry. */
+  margin-bottom: 18px !important; /* oddziela wskazówkę od list wyboru. */
+  color: #ffe18a !important; /* dopasowuje wskazówkę do złotych akcentów interfejsu. */
+  font-size: 0.9rem; /* pozostawia ją pomocniczą względem głównego opisu. */
+} /* kończy wskazówkę o zmianie tła. */
+
+.appearance-options { /* rozmieszcza dwa ustawienia obok siebie na dużym ekranie. */
+  display: flex; /* ustawia pola wyboru w jednym rzędzie. */
+  justify-content: center; /* centruje parę ustawień w panelu. */
+  gap: 18px; /* oddziela wybór koloru od wyboru tła. */
+} /* kończy układ pól personalizacji. */
+
+.appearance-field { /* grupuje każdą etykietę z jej listą wyboru. */
+  display: flex; /* układa opis nad kontrolką. */
+  flex: 1; /* rozdziela dostępne miejsce równo między dwa pola. */
+  flex-direction: column; /* umieszcza etykietę nad listą. */
+  gap: 7px; /* oddziela etykietę od listy wyboru. */
+  max-width: 340px; /* zapobiega nadmiernemu rozciąganiu kontrolek na dużym ekranie. */
+  color: #f4f4ff; /* utrzymuje czytelność nazw opcji. */
+  font-weight: bold; /* wyróżnia opis nad listą wyboru. */
+  text-align: left; /* ułatwia szybkie odczytanie etykiety. */
+} /* kończy grupowanie pojedynczej opcji wyglądu. */
+
+.appearance-field select { /* ujednolica wygląd list wyboru dla myszy i dotyku. */
+  width: 100%; /* dopasowuje listę do szerokości pola. */
+  min-height: 48px; /* zapewnia wygodny cel dotykowy. */
+  padding: 10px 14px; /* zachowuje odstęp tekstu od krawędzi kontrolki. */
+  color: #fff; /* zapewnia czytelny tekst wybranej opcji. */
+  font: bold 1rem Arial, sans-serif; /* dopasowuje tekst do reszty interfejsu. */
+  background: #202038; /* odcina kontrolki od jaśniejszego panelu. */
+  border: 2px solid #666685; /* wyznacza widoczną krawędź kontrolki. */
+  border-radius: 12px; /* dopasowuje listę do zaokrąglonych elementów strony. */
+  cursor: pointer; /* wskazuje, że ustawienie można zmienić. */
+} /* kończy wygląd list wyboru. */
+
+.appearance-field select:focus-visible { /* podkreśla aktywne pole dla klawiatury i dostępności. */
+  outline: 3px solid #ffe066; /* pokazuje wyraźny fokus wokół listy. */
+  outline-offset: 2px; /* oddziela obrys fokusu od kontrolki. */
+} /* kończy styl fokusu list wyboru. */
+
 /* Rysuje mały podgląd kolorowych elementów gry pod przyciskiem startu. */
 .hero-scene { /* wyznacza obszar ilustracji, aby elementy pozostały w jednej scenie. */
   position: relative; /* pozwala ustawiać platformy, postać i monety względem sceny. */
@@ -95,7 +157,7 @@ body::after { /* umieszcza drugą chmurkę po przeciwnej stronie strony. */
   height: 34px; /* ustala wysokość czerwonej postaci. */
   border: 3px solid #fff; /* dodaje jasny obrys widoczny na niebieskim tle. */
   border-radius: 7px 7px 4px 4px; /* nadaje postaci rozpoznawalny, miękki kształt. */
-  background: #e94b4b; /* używa czerwonego koloru bohatera z planszy. */
+  background: var(--player-color, #e94b4b); /* dopasowuje kolor ilustracji do wyboru bohatera w ustawieniach. */
   box-shadow: 0 5px 0 rgba(90, 40, 40, 0.22); /* dodaje lekki cień pod postacią. */
   animation: hero-hop 1.8s ease-in-out infinite; /* delikatnie podskakuje, aby scena wyglądała na żywą. */
 } /* kończy wygląd głównego bohatera ilustracji. */
@@ -542,6 +604,25 @@ footer p {
   .hero h1 {
     font-size: 2.5rem;
   }
+
+  .appearance-settings { /* zmniejsza panel opcji wyglądu na telefonie. */
+    width: calc(100% - 24px); /* zostawia bezpieczne marginesy po bokach wąskiego ekranu. */
+    margin-top: 24px; /* ogranicza przerwę pod nagłówkiem. */
+    padding: 20px 16px; /* mieści opcje bez nadmiernego zajmowania miejsca. */
+  } /* kończy mobilny wygląd panelu personalizacji. */
+
+  .appearance-settings h2 { /* dopasowuje tytuł ustawień do małego ekranu. */
+    font-size: 1.45rem; /* zapobiega zbyt szerokiemu nagłówkowi na telefonie. */
+  } /* kończy mobilny rozmiar tytułu ustawień. */
+
+  .appearance-options { /* układa kontrolki jedna pod drugą na telefonie. */
+    flex-direction: column; /* daje każdemu wyborowi pełny wiersz. */
+    gap: 12px; /* oddziela listę koloru od listy tła. */
+  } /* kończy mobilny układ list wyboru. */
+
+  .appearance-field { /* pozwala kontrolkom wypełnić szerokość panelu mobilnego. */
+    max-width: none; /* usuwa limit szerokości stosowany na komputerze. */
+  } /* kończy mobilne dopasowanie pól ustawień. */
 
   /* Zmniejsza tekst opisu, by mieścił się na wąskim ekranie. */
   .tagline {

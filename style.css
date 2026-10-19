@@ -86,8 +86,108 @@ body.level-thumbnail .lang-button {
   background: rgba(0, 0, 0, 0.75);
 }
 
+/* Pokazuje pełnoekranowe podsumowanie po przejściu całej gry. */
+.victory-screen { /* przykrywa planszę, aby skupić uwagę na wyniku i kolejnych działaniach. */
+  position: fixed; /* utrzymuje podsumowanie na środku widocznego ekranu. */
+  inset: 0; /* rozciąga przyciemnione tło na całe okno przeglądarki. */
+  z-index: 20; /* umieszcza podsumowanie nad planszą i przyciskami gry. */
+  display: grid; /* umożliwia wyśrodkowanie karty w pionie i poziomie. */
+  place-items: center; /* centruje kartę zwycięstwa na ekranie. */
+  box-sizing: border-box; /* wlicza bezpieczne marginesy w rozmiar nakładki. */
+  padding: max(20px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); /* omija wcięcia ekranów telefonów. */
+  background: rgba(12, 14, 30, 0.82); /* przyciemnia grę pod ekranem podsumowania. */
+} /* kończy układ nakładki zwycięstwa. */
+
+.victory-screen[hidden] { /* zachowuje ukrycie ekranu przed ukończeniem gry. */
+  display: none; /* nie rezerwuje miejsca, dopóki gra nie zostanie wygrana. */
+} /* kończy regułę ukrytego podsumowania. */
+
+.victory-card { /* tworzy czytelną kartę z wynikiem i przyciskami po wygranej. */
+  box-sizing: border-box; /* wlicza obramowanie i padding w szerokość ograniczoną do ekranu. */
+  width: min(100%, 460px); /* dopasowuje kartę do telefonu i ogranicza jej szerokość na komputerze. */
+  max-height: 100%; /* utrzymuje kartę w obrębie niskiego ekranu. */
+  overflow-y: auto; /* pozwala przewinąć kartę, jeśli ekran telefonu jest bardzo niski. */
+  padding: 30px 28px; /* dodaje przestrzeń między treścią a krawędzią karty. */
+  color: #fff; /* zapewnia jasny tekst na ciemnej karcie. */
+  text-align: center; /* centruje gratulacje i wynik. */
+  background: linear-gradient(155deg, #34365b, #202137); /* nadaje panelowi głębię dopasowaną do kolorów gry. */
+  border: 2px solid rgba(255, 224, 102, 0.75); /* wyróżnia ekran ukończenia złotą ramką. */
+  border-radius: 24px; /* zmiękcza narożniki karty. */
+  box-shadow: 0 20px 70px rgba(0, 0, 0, 0.45); /* oddziela kartę od przyciemnionego tła. */
+} /* kończy kartę podsumowania zwycięstwa. */
+
+.victory-medal { /* podkreśla osiągnięcie dużą złotą gwiazdą. */
+  display: grid; /* centruje symbol medalu w jego okrągłej oprawie. */
+  place-items: center; /* ustawia gwiazdę dokładnie na środku. */
+  width: 76px; /* ustala szerokość ozdobnego medalu. */
+  height: 76px; /* zachowuje okrągły kształt medalu. */
+  margin: 0 auto 12px; /* centruje medal i oddziela go od tytułu. */
+  color: #765000; /* nadaje gwieździe ciemniejszy kolor dla kontrastu. */
+  font-size: 2.8rem; /* powiększa symbol gwiazdy. */
+  background: linear-gradient(145deg, #fff1a8, #ffcc00); /* tworzy złoty medal z jasnym połyskiem. */
+  border: 4px solid rgba(255, 255, 255, 0.8); /* dodaje jasny obrys medalu. */
+  border-radius: 50%; /* zamienia oprawę gwiazdy w medal. */
+  box-shadow: 0 7px 0 #c79a00, 0 12px 24px rgba(255, 204, 0, 0.22); /* nadaje medalowi głębię i złotą poświatę. */
+} /* kończy wygląd złotego medalu. */
+
+.victory-card h1 { /* ustawia wyróżniający się tytuł ukończenia gry. */
+  margin: 8px 0; /* oddziela tytuł od medalu i komunikatu. */
+  color: #ffe066; /* używa złotego koloru podkreślającego zwycięstwo. */
+  font-size: clamp(1.8rem, 7vw, 2.5rem); /* zmniejsza nagłówek na małych ekranach. */
+  line-height: 1.15; /* utrzymuje zwięzły odstęp w tytule. */
+} /* kończy styl tytułu zwycięstwa. */
+
+#victory-message { /* prezentuje gratulacje pod tytułem. */
+  margin: 8px 0 12px; /* zachowuje czytelne odstępy wokół komunikatu. */
+  color: #e4e5f2; /* odróżnia opis od złotego nagłówka. */
+  font-size: 1.05rem; /* utrzymuje wygodny rozmiar tekstu. */
+} /* kończy styl gratulacji. */
+
+.victory-score { /* wyróżnia łączny wynik zdobyty w całej rozgrywce. */
+  margin: 14px 0 24px; /* oddziela wynik od gratulacji i przycisków. */
+  color: #ffdf70; /* zwraca uwagę na końcową liczbę punktów. */
+  font-size: 1.45rem; /* pokazuje wynik większą czcionką. */
+  font-weight: bold; /* podkreśla znaczenie podsumowania. */
+} /* kończy styl końcowego wyniku. */
+
+.victory-button, /* wyróżnia główną akcję ponownego przejścia gry. */
+.victory-menu-button { /* ujednolica wygląd obu akcji na ekranie ukończenia. */
+  box-sizing: border-box; /* daje przyciskowi i linkowi takie same wymiary z paddingiem i obramowaniem. */
+  display: flex; /* ustawia napis w środku każdego przycisku. */
+  align-items: center; /* centruje napisy pionowo. */
+  justify-content: center; /* centruje napisy poziomo. */
+  width: 100%; /* ułatwia kliknięcie lub dotknięcie całego wiersza. */
+  height: 56px; /* nadaje obu akcjom identyczną wysokość. */
+  min-height: 56px; /* zachowuje równy rozmiar także przy dłuższych napisach. */
+  padding: 12px 18px; /* zachowuje odstęp tekstu wewnątrz przycisków. */
+  line-height: 1.2; /* ujednolica wysokość wiersza w przycisku i linku. */
+  border-radius: 14px; /* dopasowuje przyciski do miękkiego kształtu karty. */
+  font: bold 1rem Arial, sans-serif; /* ujednolica rozmiar i grubość napisów. */
+  text-align: center; /* centruje etykiety przycisków. */
+  text-decoration: none; /* usuwa podkreślenie z linku powrotu do menu. */
+  cursor: pointer; /* wskazuje, że elementy są interaktywne. */
+} /* kończy wspólne reguły przycisków zwycięstwa. */
+
+.victory-button { /* wyróżnia ponowną grę jako główną akcję. */
+  color: #242033; /* zapewnia kontrast tekstu na żółtym tle. */
+  background: #ffcc00; /* nadaje głównej akcji kolor startowego przycisku gry. */
+  border: 2px solid #ffe066; /* podkreśla krawędź głównego przycisku. */
+  box-shadow: 0 4px 0 #c79a00; /* nadaje przyciskowi lekki efekt wypukłości. */
+} /* kończy wygląd przycisku ponownej gry. */
+
+.victory-menu-button { /* prezentuje powrót do menu jako drugą, spokojniejszą akcję. */
+  margin-top: 12px; /* oddziela link menu od przycisku ponownej gry. */
+  color: #fff; /* utrzymuje czytelny tekst na ciemnym tle. */
+  background: rgba(255, 255, 255, 0.08); /* odróżnia link bez rywalizowania z główną akcją. */
+  border: 2px solid rgba(255, 255, 255, 0.55); /* wyznacza czytelną krawędź drugiego przycisku. */
+} /* kończy wygląd przycisku powrotu do menu. */
+
 /* Dopasowuje obszar gry i przyciski do telefonu lub innego ekranu dotykowego. */
 @media (pointer: coarse), (max-width: 700px) { /* włącza dotykowe sterowanie i responsywne wymiary na małych ekranach. */
+  .victory-card { /* zmniejsza odstępy panelu zwycięstwa na wąskim ekranie. */
+    padding: 24px 18px; /* zostawia miejsce na tekst i duże przyciski na telefonie. */
+  } /* kończy mobilne dopasowanie karty zwycięstwa. */
+
   body:not(.level-thumbnail) { /* stosuje układ mobilny tylko w pełnej grze, nie w miniaturach poziomów. */
     box-sizing: border-box; /* uwzględnia bezpieczne marginesy w wysokości widoku. */
     min-height: 100vh; /* zapas dla przeglądarek bez dynamicznej jednostki wysokości. */

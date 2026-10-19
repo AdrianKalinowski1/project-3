@@ -22,6 +22,16 @@
     <button id="touch-right" type="button" aria-label="Ruch w prawo">▶</button> <!-- przytrzymanie przesuwa postać w prawo. -->
     <button id="touch-jump" type="button" aria-label="Skok">▲</button> <!-- przytrzymanie pozwala wykonywać skoki. -->
   </div> <!-- kończy grupę przycisków dotykowych. -->
+  <section id="victory-screen" class="victory-screen" role="dialog" aria-modal="true" aria-labelledby="victory-title" hidden> <!-- pokazuje podsumowanie dopiero po ukończeniu ostatniego poziomu. -->
+    <div class="victory-card"> <!-- grupuje gratulacje, końcowy wynik i przyciski dalszych działań. -->
+      <div class="victory-medal" aria-hidden="true">★</div> <!-- wyróżnia wygraną dużą złotą gwiazdą. -->
+      <h1 id="victory-title"></h1> <!-- tytuł wygranej jest uzupełniany w aktualnym języku. -->
+      <p id="victory-message"></p> <!-- informuje, że wszystkie poziomy zostały ukończone. -->
+      <p id="victory-score" class="victory-score"></p> <!-- pokazuje łączny końcowy wynik gracza. -->
+      <button id="replay-button" class="victory-button" type="button"></button> <!-- rozpoczyna nową rozgrywkę od pierwszego poziomu. -->
+      <a id="victory-menu-button" class="victory-menu-button" href="index.html" target="_top"></a> <!-- wraca do menu także wtedy, gdy gra działa w ramce podglądu. -->
+    </div> <!-- kończy kartę podsumowania zwycięstwa. -->
+  </section> <!-- kończy pełnoekranowe podsumowanie zwycięstwa. -->
   <!-- Wczytuje logikę gry po utworzeniu elementów strony. -->
   <script src="game.js"></script>
 </body>

@@ -32,6 +32,33 @@
     </div> <!-- kończy dekoracyjną ilustrację w nagłówku. -->
   </header>
 
+  <section class="appearance-settings" aria-labelledby="appearance-title"> <!-- pozwala wybrać wygląd postaci i tła przed rozpoczęciem gry. -->
+    <h2 id="appearance-title" data-i18n="appearanceTitle">Dostosuj wygląd gry</h2> <!-- nazywa opcje wyglądu dostępne dla gracza. -->
+    <p data-i18n="appearanceHint">Twój wybór zapisze się automatycznie.</p> <!-- informuje, że ustawienia pozostaną po odświeżeniu strony. -->
+    <p class="appearance-theme-hint" data-i18n="themeHint">Wybrany motyw zmienia się dalej co dwa poziomy.</p> <!-- wyjaśnia, jak własny wybór łączy się ze zmianą tła w grze. -->
+    <div class="appearance-options"> <!-- układa wybór koloru i motywu w dwóch czytelnych polach. -->
+      <label class="appearance-field" for="player-color"> <!-- łączy opis koloru z listą wyboru postaci. -->
+        <span data-i18n="playerColorLabel">Kolor postaci</span> <!-- opisuje pierwszą opcję wyglądu. -->
+        <select id="player-color"> <!-- zawiera dostępne kolory bohatera. -->
+          <option value="#e94b4b" data-i18n="colorRed">Czerwony</option> <!-- wybiera domyślny czerwony kolor postaci. -->
+          <option value="#3988e8" data-i18n="colorBlue">Niebieski</option> <!-- oferuje niebieski kolor postaci. -->
+          <option value="#38a86b" data-i18n="colorGreen">Zielony</option> <!-- oferuje zielony kolor postaci. -->
+          <option value="#a65be0" data-i18n="colorPurple">Fioletowy</option> <!-- oferuje fioletowy kolor postaci. -->
+          <option value="#f08a32" data-i18n="colorOrange">Pomarańczowy</option> <!-- oferuje pomarańczowy kolor postaci. -->
+        </select> <!-- kończy listę wyboru koloru bohatera. -->
+      </label> <!-- kończy pole wyboru koloru postaci. -->
+      <label class="appearance-field" for="background-theme"> <!-- łączy opis motywu z listą wyboru tła. -->
+        <span data-i18n="backgroundLabel">Motyw tła</span> <!-- opisuje drugą opcję wyglądu. -->
+        <select id="background-theme"> <!-- zawiera dostępne motywy tła dla poziomów. -->
+          <option value="0" data-i18n="themeDefault">Domyślny</option> <!-- rozpoczyna rotację od klasycznego niebieskiego nieba. -->
+          <option value="1" data-i18n="themeSunset">Zachód słońca</option> <!-- rozpoczyna rotację od ciepłego pomarańczowego nieba. -->
+          <option value="2" data-i18n="themeNight">Noc</option> <!-- rozpoczyna rotację od nocnego nieba z gwiazdami. -->
+          <option value="3" data-i18n="themeForest">Las</option> <!-- rozpoczyna rotację od zielonego motywu. -->
+        </select> <!-- kończy listę wyboru motywu tła. -->
+      </label> <!-- kończy pole wyboru motywu tła. -->
+    </div> <!-- kończy układ opcji wyglądu gry. -->
+  </section> <!-- kończy ustawienia wyglądu gry na stronie głównej. -->
+
   <!-- Karty przedstawiające najważniejsze elementy gry. -->
   <section class="features">
     <h2 data-i18n="featuresTitle">Dlaczego warto zagrać?</h2>

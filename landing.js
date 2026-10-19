@@ -2,6 +2,20 @@
 const translations = {
   pl: {
     heroTagline: "Skacz, zbieraj monety i omijaj kolce. Dasz radę przejść wszystkie poziomy?",
+    appearanceTitle: "Dostosuj wygląd gry", // tytuł sekcji ustawień wyglądu po polsku.
+    appearanceHint: "Twój wybór zapisze się automatycznie.", // informacja o automatycznym zapisywaniu wyglądu.
+    themeHint: "Wybrany motyw zmienia się dalej co dwa poziomy.", // wyjaśnia, że tła nadal zmieniają się w trakcie gry.
+    playerColorLabel: "Kolor postaci", // etykieta wyboru koloru postaci.
+    backgroundLabel: "Motyw tła", // etykieta wyboru motywu tła.
+    colorRed: "Czerwony", // polska nazwa czerwonego koloru.
+    colorBlue: "Niebieski", // polska nazwa niebieskiego koloru.
+    colorGreen: "Zielony", // polska nazwa zielonego koloru.
+    colorPurple: "Fioletowy", // polska nazwa fioletowego koloru.
+    colorOrange: "Pomarańczowy", // polska nazwa pomarańczowego koloru.
+    themeDefault: "Domyślny", // polska nazwa klasycznej rotacji teł.
+    themeSunset: "Zachód słońca", // polska nazwa motywu zachodzącego słońca.
+    themeNight: "Noc", // polska nazwa nocnego motywu z gwiazdami.
+    themeForest: "Las", // polska nazwa zielonego motywu.
     levelMapTitle: "Droga przez poziomy",
     levelMapHint: "Przejdź poziom, aby odblokować następny.",
     levelLabel: "Poziom ",
@@ -33,6 +47,20 @@ const translations = {
   },
   en: {
     heroTagline: "Jump, collect coins and dodge the spikes. Can you beat every level?",
+    appearanceTitle: "Customize your game", // title of the appearance settings section.
+    appearanceHint: "Your choices are saved automatically.", // explains that appearance choices are saved.
+    themeHint: "Your chosen theme continues changing every two levels.", // explains how level background rotation works.
+    playerColorLabel: "Character color", // label for the character color selector.
+    backgroundLabel: "Background theme", // label for the background theme selector.
+    colorRed: "Red", // English name for the red character color.
+    colorBlue: "Blue", // English name for the blue character color.
+    colorGreen: "Green", // English name for the green character color.
+    colorPurple: "Purple", // English name for the purple character color.
+    colorOrange: "Orange", // English name for the orange character color.
+    themeDefault: "Default", // English name for the classic background rotation.
+    themeSunset: "Sunset", // English name for the warm sunset theme.
+    themeNight: "Night", // English name for the starry night theme.
+    themeForest: "Forest", // English name for the green theme.
     levelMapTitle: "Level path",
     levelMapHint: "Complete a level to unlock the next one.",
     levelLabel: "Level ",
@@ -100,12 +128,40 @@ const previewFrame = document.getElementById("preview-frame");
 const previewStart = document.getElementById("preview-start");
 const levelPath = document.getElementById("level-path");
 const playButton = document.querySelector(".play-button");
+const playerColorSelect = document.getElementById("player-color"); // pobiera listę kolorów bohatera.
+const backgroundThemeSelect = document.getElementById("background-theme"); // pobiera listę początkowych motywów tła.
 let previewIframe;
 // Poziom wybrany na mapie; na początku zaznaczony jest pierwszy.
 let selectedLevel = 1;
 // Liczba poziomów w grze oraz klucz, pod którym zapisano postęp.
 const levelCount = 8;
 const unlockedLevelKey = "unlockedLevel";
+const playerColorKey = "playerColor"; // klucz localStorage przechowujący wybrany kolor postaci.
+const backgroundThemeKey = "backgroundTheme"; // klucz localStorage przechowujący wybrany motyw tła.
+
+// Przywraca i zapisuje wygląd gry, aby wybory działały na stronie i w podglądzie.
+function updateAppearanceSettings() { // synchronizuje listy wyglądu z pamięcią przeglądarki.
+  const savedColor = localStorage.getItem(playerColorKey); // pobiera poprzednio zapisany kolor postaci.
+  const availableColors = Array.from(playerColorSelect.options, function (option) { return option.value; }); // pobiera dozwolone kolory z listy wyboru.
+  playerColorSelect.value = availableColors.includes(savedColor) ? savedColor : playerColorSelect.options[0].value; // odrzuca nieznane wartości i wybiera kolor domyślny.
+  const savedTheme = localStorage.getItem(backgroundThemeKey); // pobiera poprzednio zapisany motyw tła.
+  const availableThemes = Array.from(backgroundThemeSelect.options, function (option) { return option.value; }); // pobiera dozwolone motywy z listy wyboru.
+  backgroundThemeSelect.value = availableThemes.includes(savedTheme) ? savedTheme : backgroundThemeSelect.options[0].value; // odrzuca nieznane wartości i wybiera motyw domyślny.
+  document.documentElement.style.setProperty("--player-color", playerColorSelect.value); // aktualizuje kolor bohatera w ozdobnej ilustracji strony.
+} // kończy przywracanie ustawień wyglądu.
+
+// Zapisuje wybrany kolor i natychmiast odświeża powiązane podglądy gry.
+playerColorSelect.addEventListener("change", function () { // reaguje na wybór nowego koloru bohatera.
+  localStorage.setItem(playerColorKey, playerColorSelect.value); // zapisuje dozwolony kolor na potrzeby gry.
+  updateAppearanceSettings(); // aktualizuje także kolor postaci w nagłówkowej ilustracji.
+}); // kończy obsługę zmiany koloru postaci.
+
+// Zapisuje wybrany motyw, zachowując zmianę tła co dwa poziomy.
+backgroundThemeSelect.addEventListener("change", function () { // reaguje na wybór nowego motywu tła.
+  localStorage.setItem(backgroundThemeKey, backgroundThemeSelect.value); // zapisuje początkowy motyw poziomów.
+}); // kończy obsługę zmiany motywu tła.
+
+updateAppearanceSettings(); // wczytuje zapisany wygląd lub ustawia wartości domyślne.
 
 // Tworzy adres strony gry dla aktualnie wybranego poziomu.
 function getGameUrl() {

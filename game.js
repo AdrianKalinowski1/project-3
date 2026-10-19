@@ -17,6 +17,12 @@ const respawnDelay = 180;
 const langButton = document.getElementById("lang-button");
 // Link powrotu do menu; jego tekst zmienia się razem z językiem gry.
 const menuButton = document.getElementById("menu-button");
+const victoryScreen = document.getElementById("victory-screen"); // pobiera ukryte podsumowanie końcowe z dokumentu gry.
+const victoryTitle = document.getElementById("victory-title"); // pobiera nagłówek ekranu zwycięstwa.
+const victoryMessage = document.getElementById("victory-message"); // pobiera opis ukończenia wszystkich poziomów.
+const victoryScore = document.getElementById("victory-score"); // pobiera miejsce na końcowy wynik.
+const replayButton = document.getElementById("replay-button"); // pobiera przycisk rozpoczęcia całej gry od nowa.
+const victoryMenuButton = document.getElementById("victory-menu-button"); // pobiera link powrotu do menu z ekranu zwycięstwa.
 
 // ===== TŁUMACZENIA =====
 // Wszystkie napisy w grze, osobno dla każdego języka (pl = polski, en = angielski)
@@ -31,14 +37,17 @@ const translations = {
     moveLeft: "Ruch w lewo", // opis dostępności przycisku ruchu w lewo po polsku.
     moveRight: "Ruch w prawo", // opis dostępności przycisku ruchu w prawo po polsku.
     jump: "Skok", // opis dostępności przycisku skoku po polsku.
+    victoryMessage: "Ukończyłeś wszystkie poziomy!", // gratuluje przejścia całej gry po polsku.
+    victoryScore: "Wynik końcowy: ", // podpis sumy punktów po polsku.
+    victoryPoints: " pkt", // skrót jednostki punktów na ekranie podsumowania.
+    replay: "Zagraj ponownie", // opisuje przycisk ponownego przejścia gry po polsku.
+    victoryMenu: "Wróć do menu", // opisuje przycisk powrotu do menu po polsku.
     gameOverTitle: "Koniec gry!",
     gameOverHint: "Naciśnij R, aby zagrać jeszcze raz",
     checkpointShort: "PK", // krótki napis na fladze punktu kontrolnego.
     checkpointReached: "Punkt kontrolny zapisany!", // informuje o aktywowaniu flagi.
     checkpointRespawn: "Powrót do punktu kontrolnego!", // informuje o odrodzeniu po błędzie.
-    wonTitle: "Wygrałeś!",
-    // {score} to miejsce, w które później wstawiamy prawdziwy wynik
-    wonHint: "Wynik: {score} pkt. Naciśnij R, aby zagrać jeszcze raz"
+    wonTitle: "Wygrałeś!" // tytuł wyświetlany po ukończeniu wszystkich poziomów.
   },
   en: {
     points: "Score: ",
@@ -50,13 +59,17 @@ const translations = {
     moveLeft: "Move left", // accessible label for the left movement button.
     moveRight: "Move right", // accessible label for the right movement button.
     jump: "Jump", // accessible label for the jump button.
+    victoryMessage: "You completed every level!", // congratulates the player for finishing the game.
+    victoryScore: "Final score: ", // labels the total score in English.
+    victoryPoints: " pts", // score unit shown on the completion screen.
+    replay: "Play again", // labels the button that starts a new full playthrough.
+    victoryMenu: "Return to menu", // labels the button that returns to the main menu.
     gameOverTitle: "Game over!",
     gameOverHint: "Press R to play again",
     checkpointShort: "CP", // krótki angielski napis na fladze punktu kontrolnego.
     checkpointReached: "Checkpoint saved!", // informs the player that the flag is active.
     checkpointRespawn: "Back at the checkpoint!", // informs the player after respawning.
-    wonTitle: "You win!",
-    wonHint: "Score: {score}. Press R to play again"
+    wonTitle: "You win!" // title shown after completing every level.
   }
 };
 
@@ -79,16 +92,29 @@ function setLanguage(language) {
   document.getElementById("touch-left").setAttribute("aria-label", t("moveLeft")); // tłumaczy opis przycisku ruchu w lewo.
   document.getElementById("touch-right").setAttribute("aria-label", t("moveRight")); // tłumaczy opis przycisku ruchu w prawo.
   document.getElementById("touch-jump").setAttribute("aria-label", t("jump")); // tłumaczy opis przycisku skoku.
+  victoryTitle.textContent = t("wonTitle"); // ustawia przetłumaczony tytuł zwycięstwa.
+  victoryMessage.textContent = t("victoryMessage"); // ustawia przetłumaczone gratulacje ukończenia gry.
+  victoryScore.textContent = t("victoryScore") + score + t("victoryPoints"); // pokazuje wynik bieżącej rozgrywki w aktualnym języku.
+  replayButton.textContent = t("replay"); // tłumaczy przycisk rozpoczęcia gry od początku.
+  victoryMenuButton.textContent = t("victoryMenu"); // tłumaczy przycisk powrotu do menu.
 }
 
 // ===== DANE GRY =====
+const playerColors = { // ogranicza wybór koloru do bezpiecznych wartości z menu wyglądu.
+  "#e94b4b": "#e94b4b", // domyślny czerwony kolor postaci.
+  "#3988e8": "#3988e8", // dostępny niebieski kolor postaci.
+  "#38a86b": "#38a86b", // dostępny zielony kolor postaci.
+  "#a65be0": "#a65be0", // dostępny fioletowy kolor postaci.
+  "#f08a32": "#f08a32" // dostępny pomarańczowy kolor postaci.
+}; // kończy listę dozwolonych kolorów bohatera.
+const savedPlayerColor = localStorage.getItem("playerColor"); // pobiera ostatnio wybrany kolor bohatera.
 // Gracz: jeden obiekt, który trzyma wszystko o postaci
 const player = {
   x: 50,               // pozycja w poziomie (lewa krawędź)
   y: 300,              // pozycja w pionie (górna krawędź)
   width: 40,           // szerokość postaci
   height: 50,          // wysokość postaci
-  color: "red",        // kolor postaci
+  color: Object.prototype.hasOwnProperty.call(playerColors, savedPlayerColor) ? playerColors[savedPlayerColor] : "#e94b4b", // używa zapisanego koloru lub bezpiecznej wartości domyślnej.
   velocityX: 0,        // prędkość w poziomie (+ prawo, - lewo)
   acceleration: 0.8,   // o ile rośnie prędkość, gdy trzymasz strzałkę
   friction: 0.85,      // tarcie: w każdej klatce zostaje 85% prędkości (płynne hamowanie)
@@ -132,6 +158,9 @@ const backgroundThemes = [
   { top: "#342b67", bottom: "#8273b5", clouds: "rgba(230, 225, 255, 0.75)", stars: true },
   { top: "#329b87", bottom: "#b8e6bd", clouds: "rgba(240, 255, 245, 0.8)" }
 ];
+const backgroundThemeStorageKey = "backgroundTheme"; // klucz ustawienia motywu wybranego w menu.
+let backgroundThemeOffset = Number(localStorage.getItem(backgroundThemeStorageKey)); // odczytuje numer motywu początkowego z pamięci.
+backgroundThemeOffset = Number.isInteger(backgroundThemeOffset) && backgroundThemeOffset >= 0 && backgroundThemeOffset < backgroundThemes.length ? backgroundThemeOffset : 0; // przywraca domyślny motyw, gdy zapis jest nieprawidłowy.
 
 // Rząd kolców na ziemi: startX = gdzie zaczyna się rząd, count = ile kolców
 function spikeRow(startX, count) {
@@ -374,6 +403,16 @@ window.addEventListener("blur", function () { // czyści sterowanie, gdy użytko
   } // kończy zwalnianie zapamiętanych klawiszy.
 }); // kończy obsługę utraty fokusu okna gry.
 
+window.addEventListener("storage", function (event) { // aktualizuje wygląd gry, gdy ustawienie zmieni się w innym oknie.
+  if (event.key === "playerColor") { // reaguje wyłącznie na zmianę koloru postaci.
+    player.color = Object.prototype.hasOwnProperty.call(playerColors, event.newValue) ? playerColors[event.newValue] : "#e94b4b"; // przyjmuje tylko dozwolony kolor albo wraca do czerwieni.
+  } // kończy aktualizowanie koloru postaci.
+  if (event.key === backgroundThemeStorageKey) { // reaguje wyłącznie na zmianę motywu tła.
+    const selectedTheme = Number(event.newValue); // zamienia zapisany numer motywu na liczbę.
+    backgroundThemeOffset = Number.isInteger(selectedTheme) && selectedTheme >= 0 && selectedTheme < backgroundThemes.length ? selectedTheme : 0; // waliduje numer albo ustawia motyw domyślny.
+  } // kończy aktualizowanie motywu tła.
+}); // kończy synchronizację wyglądu między kartami.
+
 // ===== FUNKCJE POMOCNICZE =====
 // Sprawdza, czy dwa prostokąty (a i b) na siebie nachodzą. Zwraca true albo false.
 function isOverlapping(a, b) {
@@ -486,9 +525,21 @@ function restartGame() {
   score = 0;             // zerujemy punkty
   gameOver = false;      // zdejmujemy ekran przegranej
   gameWon = false;       // i ekran wygranej
+  victoryScreen.hidden = true; // ukrywa podsumowanie, jeśli restart nastąpił z poziomu ekranu wygranej.
   currentLevel = startingLevel;
   loadLevel(startingLevel);
 }
+
+// Uruchamia pełną rozgrywkę od pierwszego poziomu bez kasowania zapisanego postępu.
+function replayFromBeginning() { // rozpoczyna nową próbę przejścia całej gry.
+  score = 0; // zeruje punkty tylko dla nowej próby.
+  gameOver = false; // usuwa stan przegranej.
+  gameWon = false; // usuwa stan zwycięstwa.
+  startingLevel = 0; // ustawia pierwszy poziom jako punkt startowy także dla klawisza R.
+  currentLevel = 0; // wybiera pierwszy poziom gry.
+  victoryScreen.hidden = true; // chowa ekran podsumowania przed ponowną grą.
+  loadLevel(0); // wczytuje planszę pierwszego poziomu.
+} // kończy ponowne rozpoczynanie całej gry.
 
 // Zapisuje najlepszy wynik, jeśli ten jest lepszy od poprzedniego rekordu
 function saveBestScore() {
@@ -773,6 +824,13 @@ function update() {
   // Gdy gra się skończyła: zapisujemy rekord i nic więcej nie liczymy (wszystko stoi)
   if (gameOver || gameWon) {
     saveBestScore();
+    if (gameWon && !isLevelThumbnail) { // pokazuje podsumowanie zwycięstwa tylko w pełnej wersji gry.
+      if (victoryScreen.hidden) { // reaguje tylko przy pierwszym pokazaniu podsumowania zwycięstwa.
+        victoryScore.textContent = t("victoryScore") + score + t("victoryPoints"); // zapisuje końcowy wynik przed odsłonięciem panelu.
+        victoryScreen.hidden = false; // odsłania panel z wynikiem i przyciskami po wygranej.
+        replayButton.focus(); // przenosi fokus klawiatury na pierwszą akcję po zakończeniu gry.
+      } // kończy jednorazowe pokazywanie podsumowania.
+    } // kończy wyświetlanie ekranu zwycięstwa.
     return;
   }
   if (checkpointNoticeTimer > 0) { // odlicza czas wyświetlania informacji o punkcie kontrolnym.
@@ -799,7 +857,7 @@ function update() {
 // Niebo i chmury; motyw zmienia się co dwa poziomy
 function drawBackground() {
   // Math.floor grupuje poziomy parami; modulo powtarza motywy, gdy skończą się zestawy.
-  const theme = backgroundThemes[Math.floor(currentLevel / 2) % backgroundThemes.length];
+  const theme = backgroundThemes[(Math.floor(currentLevel / 2) + backgroundThemeOffset) % backgroundThemes.length]; // zmienia tła co dwa poziomy, zaczynając od motywu wybranego w menu.
   // Tworzy płynne przejście od koloru u góry do koloru u dołu ekranu.
   const sky = ctx.createLinearGradient(0, 0, 0, canvas.height);
   sky.addColorStop(0, theme.top);
@@ -997,10 +1055,6 @@ function draw() {
   if (gameOver) {
     drawEndScreen(t("gameOverTitle"), t("gameOverHint"));
   }
-  if (gameWon) {
-    // w tekście podpowiedzi zamieniamy {score} na prawdziwy wynik
-    drawEndScreen(t("wonTitle"), t("wonHint").replace("{score}", score));
-  }
 }
 
 // ===== PĘTLA GRY =====
@@ -1017,6 +1071,10 @@ langButton.addEventListener("click", function () {
   setLanguage(currentLanguage === "pl" ? "en" : "pl");
   langButton.blur();     // zdejmujemy z przycisku "aktywność", żeby spacja nie klikała go przy skokach
 });
+
+replayButton.addEventListener("click", function () { // rozpoczyna ponownie pełną grę po wybraniu przycisku.
+  replayFromBeginning(); // wraca do pierwszego poziomu i zachowuje zapisane odblokowania.
+}); // kończy obsługę przycisku ponownej gry.
 
 // Odczytujemy zapisany język i ustawiamy go (jeśli nic nie zapisano, zostaje polski)
 const savedLanguage = localStorage.getItem("language");
