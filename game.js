@@ -29,6 +29,9 @@ const translations = {
     mainMenu: "Menu główne",
     gameOverTitle: "Koniec gry!",
     gameOverHint: "Naciśnij R, aby zagrać jeszcze raz",
+    checkpointShort: "PK", // krótki napis na fladze punktu kontrolnego.
+    checkpointReached: "Punkt kontrolny zapisany!", // informuje o aktywowaniu flagi.
+    checkpointRespawn: "Powrót do punktu kontrolnego!", // informuje o odrodzeniu po błędzie.
     wonTitle: "Wygrałeś!",
     // {score} to miejsce, w które później wstawiamy prawdziwy wynik
     wonHint: "Wynik: {score} pkt. Naciśnij R, aby zagrać jeszcze raz"
@@ -41,6 +44,9 @@ const translations = {
     mainMenu: "Main menu",
     gameOverTitle: "Game over!",
     gameOverHint: "Press R to play again",
+    checkpointShort: "CP", // krótki angielski napis na fladze punktu kontrolnego.
+    checkpointReached: "Checkpoint saved!", // informs the player that the flag is active.
+    checkpointRespawn: "Back at the checkpoint!", // informs the player after respawning.
     wonTitle: "You win!",
     wonHint: "Score: {score}. Press R to play again"
   }
@@ -96,6 +102,9 @@ let startingLevel = 0;
 let levelStartingScore = 0; // wynik na początku poziomu pozwala policzyć punkty zdobyte tylko na nim.
 let gameOver = false;  // czy gracz przegrał
 let gameWon = false;   // czy gracz wygrał całą grę
+let checkpoint = null; // aktywny punkt kontrolny bieżącego poziomu albo null, gdy go nie ma.
+let checkpointNoticeTimer = 0; // liczba klatek, przez które pokazujemy komunikat o punkcie kontrolnym.
+let checkpointNoticeText = ""; // tekst ostatniego komunikatu o punkcie kontrolnym.
 
 // Współrzędne chmur na niebie (tylko ozdoba)
 const clouds = [
@@ -148,7 +157,8 @@ const levels = [
     enemies: [
       // wróg chodzi między minX a maxX; y = jego wysokość; speed = prędkość
       { minX: 400, maxX: 650, y: groundY - 30, speed: 1.5 }
-    ]
+    ], // zamyka listę wrogów poziomu przed definicją punktu kontrolnego.
+    checkpoint: { x: 710, y: 140 } // bezpieczne miejsce odrodzenia na ostatniej platformie poziomu.
   },
   {
     // poziom 2
@@ -174,7 +184,8 @@ const levels = [
     ],
     enemies: [
       { minX: 440, maxX: 520, y: groundY - 30, speed: 1.2 }
-    ]
+    ], // zamyka listę wrogów poziomu przed definicją punktu kontrolnego.
+    checkpoint: { x: 710, y: 125 } // bezpieczne miejsce odrodzenia na ostatniej platformie poziomu.
   },
   {
     // poziom 3: platformy ruszające się w poziomie
@@ -192,7 +203,8 @@ const levels = [
       { x: 740, y: 370 }
     ],
     spikes: spikeRow(180, 14),   // 14 kolców pod rząd od x = 180
-    enemies: []                  // na tym poziomie nie ma wrogów
+    enemies: [],                 // na tym poziomie nie ma wrogów.
+    checkpoint: { x: 580, y: 240 } // bezpieczne miejsce odrodzenia na końcowej platformie.
   },
   {
     // poziom 4: windy, czyli platformy ruszające się w pionie
@@ -214,7 +226,8 @@ const levels = [
     spikes: spikeRow(250, 4),
     enemies: [
       { minX: 430, maxX: 600, y: groundY - 30, speed: 1.3 }
-    ]
+    ], // zamyka listę wrogów poziomu przed definicją punktu kontrolnego.
+    checkpoint: { x: 590, y: 180 } // bezpieczne miejsce odrodzenia na stałej platformie.
   },
   {
     // poziom 5: finał, wszystko razem
@@ -235,7 +248,8 @@ const levels = [
     enemies: [
       // wróg chodzi po górnej platformie (y = 170, bo platforma jest na 200, a wróg ma 30 wysokości)
       { minX: 640, maxX: 720, y: 170, speed: 1.2 }
-    ]
+    ], // zamyka listę wrogów poziomu przed definicją punktu kontrolnego.
+    checkpoint: { x: 670, y: 150 } // miejsce odrodzenia po lewej stronie przeciwnika i monety.
   },
   {
     // poziom 6: kruszące się platformy nad polem kolców
@@ -254,7 +268,8 @@ const levels = [
       { x: 690, y: 190 }
     ],
     spikes: spikeRow(150, 20),
-    enemies: []
+    enemies: [], // na tym poziomie nie ma wrogów.
+    checkpoint: { x: 670, y: 170 } // bezpieczne miejsce odrodzenia na ostatniej platformie.
   },
   {
     // poziom 7: ruchoma platforma, potem dwie kruszące się
@@ -273,7 +288,8 @@ const levels = [
       { x: 700, y: 190 }
     ],
     spikes: spikeRow(150, 21),
-    enemies: []
+    enemies: [], // na tym poziomie nie ma wrogów.
+    checkpoint: { x: 730, y: 170 } // bezpieczne miejsce odrodzenia na ostatniej platformie.
   },
   {
     // poziom 8: finał (kruszące platformy, winda i wróg na ostatniej platformie)
@@ -297,7 +313,8 @@ const levels = [
     enemies: [
       // wróg patroluje ostatnią platformę (y = 200, bo platforma jest na 230, a wróg ma 30 wysokości)
       { minX: 710, maxX: 750, y: 200, speed: 1.2 }
-    ]
+    ], // zamyka listę wrogów poziomu przed definicją punktu kontrolnego.
+    checkpoint: { x: 510, y: 120 } // bezpieczne miejsce odrodzenia przed przeciwnikiem finałowego poziomu.
   }
 ];
 
@@ -382,6 +399,12 @@ function loadLevel(index) {
     };
   });
 
+  checkpoint = level.checkpoint // pobiera punkt kontrolny zaprojektowany dla bieżącego poziomu.
+    ? { x: level.checkpoint.x, y: level.checkpoint.y, activated: false } // kopiuje współrzędne i rozpoczyna go jako nieaktywny.
+    : null; // pozostawia poziom bez punktu kontrolnego, jeśli nie został skonfigurowany.
+  checkpointNoticeTimer = 0; // usuwa komunikat poprzedniego poziomu.
+  checkpointNoticeText = ""; // czyści tekst poprzedniego komunikatu.
+
   // Pozycja startowa gracza na początku każdego poziomu
   player.x = 50;
   player.y = 300;
@@ -436,6 +459,33 @@ function saveBestScore() {
     localStorage.setItem("bestScore", bestScore);   // zapis w przeglądarce, żeby został po odświeżeniu
   }
 }
+
+// Odradza gracza przy fladze, zachowując zdobyte monety i punkty.
+function respawnAtCheckpoint() { // odtwarza gracza przy aktywnej fladze po śmierci.
+  const collectedCoinIndexes = coins // rozpoczyna odczyt monet zebranych przed śmiercią.
+    .map(function (coin, index) { return coin.collected ? index : -1; }) // zapamiętuje indeks każdej zebranej monety.
+    .filter(function (index) { return index !== -1; }); // pomija indeksy monet, których gracz jeszcze nie zebrał.
+  const savedScore = score; // zachowuje punkty zdobyte przed odrodzeniem.
+  const savedLevelStartingScore = levelStartingScore; // zachowuje bazę do obliczenia rekordu bieżącego poziomu.
+  loadLevel(currentLevel); // odtwarza przeszkody, wrogów i platformy w ich początkowym stanie.
+  for (const coinIndex of collectedCoinIndexes) { // przechodzi po monetach zebranych przed śmiercią.
+    coins[coinIndex].collected = true; // nie każe graczowi ponownie zbierać zachowanej monety.
+  } // kończy przywracanie zebranych monet.
+  score = savedScore; // przywraca zachowany wynik po ponownym załadowaniu poziomu.
+  levelStartingScore = savedLevelStartingScore; // zachowuje prawidłowe liczenie punktów w tym poziomie.
+  checkpoint.activated = true; // utrzymuje flagę jako aktywną po odtworzeniu poziomu.
+  player.x = checkpoint.x; // ustawia postać w poziomym miejscu punktu kontrolnego.
+  player.y = checkpoint.y; // ustawia postać na platformie przypisanej do punktu kontrolnego.
+  player.velocityX = 0; // zatrzymuje ruch poziomy po odrodzeniu.
+  player.velocityY = 0; // zatrzymuje spadanie po odrodzeniu.
+  player.onGround = true; // pozwala od razu skoczyć z bezpiecznej platformy.
+  player.standingOn = platforms.find(function (platform) { // wyszukuje platformę pod odrodzoną postacią.
+    return !platform.gone && player.x + player.width > platform.x && player.x < platform.x + platform.width && Math.abs(player.y + player.height - platform.y) < 1; // wybiera widoczną platformę dokładnie pod stopami.
+  }) || null; // nie przypisuje platformy, jeśli pod postacią jej nie znaleziono.
+  gameOver = false; // wznawia grę zamiast wyświetlać ekran końca.
+  checkpointNoticeText = t("checkpointRespawn"); // wybiera komunikat o powrocie w aktualnym języku.
+  checkpointNoticeTimer = 120; // pokazuje komunikat przez około dwie sekundy.
+} // kończy procedurę odrodzenia przy punkcie kontrolnym.
 
 // ===== AKTUALIZACJA =====
 // Ruch gracza w lewo i w prawo (z rozpędzaniem, hamowaniem i kolizjami z bokami platform)
@@ -632,6 +682,18 @@ function checkLevelComplete() {
   }
 }
 
+// Aktywuje flagę, gdy gracz dotknie jej po raz pierwszy.
+function checkCheckpoint() { // wykrywa dotknięcie flagi i aktywuje punkt kontrolny.
+  if (checkpoint && !checkpoint.activated) { // sprawdza tylko istniejący i jeszcze nieaktywny punkt kontrolny.
+    const trigger = { x: checkpoint.x - 8, y: checkpoint.y - 8, width: player.width + 16, height: player.height + 16 }; // tworzy nieco większą strefę, aby łatwo dotknąć flagi.
+    if (isOverlapping(player, trigger)) { // wykrywa wejście gracza w strefę flagi.
+      checkpoint.activated = true; // oznacza punkt kontrolny jako aktywny.
+      checkpointNoticeText = t("checkpointReached"); // ustawia komunikat w aktualnym języku.
+      checkpointNoticeTimer = 120; // wyświetla potwierdzenie przez około dwie sekundy.
+    } // kończy sprawdzanie kontaktu z flagą.
+  } // kończy sprawdzanie dostępności punktu kontrolnego.
+} // kończy obsługę aktywowania flagi.
+
 // Kruszące się platformy: gdy staniesz, po chwili znikają, a po kilku sekundach wracają
 function updateCrumblingPlatforms() {
   for (const platform of platforms) {
@@ -663,6 +725,9 @@ function updateCrumblingPlatforms() {
 
 // Główna funkcja aktualizacji: wywoływana w każdej klatce, liczy co się dzieje w grze
 function update() {
+  if (gameOver && checkpoint && checkpoint.activated) { // sprawdza, czy śmierć nastąpiła po aktywowaniu punktu kontrolnego.
+    respawnAtCheckpoint(); // odradza postać zamiast kończyć grę.
+  } // kończy obsługę automatycznego odrodzenia.
   // Po końcu gry klawisz R uruchamia grę od nowa
   if ((gameOver || gameWon) && keys["KeyR"]) {
     restartGame();
@@ -672,6 +737,9 @@ function update() {
     saveBestScore();
     return;
   }
+  if (checkpointNoticeTimer > 0) { // odlicza czas wyświetlania informacji o punkcie kontrolnym.
+    checkpointNoticeTimer--; // skraca komunikat o jedną klatkę.
+  } // kończy odliczanie komunikatu.
 
   // Kolejność ma znaczenie: najpierw platformy i przenoszenie gracza, potem jego własny ruch
   movePlatforms();            // ruszamy platformy
@@ -683,6 +751,9 @@ function update() {
   collectCoins();             // zbieramy monety
   checkSpikes();              // sprawdzamy kolce
   checkEnemies();             // sprawdzamy wrogów
+  if (!gameOver) { // nie aktywuje checkpointu w tej samej chwili, gdy gracz zginął.
+    checkCheckpoint(); // sprawdza, czy gracz dotknął flagi.
+  } // kończy zabezpieczenie sprawdzania flagi.
   checkLevelComplete();       // sprawdzamy, czy poziom ukończony
 }
 
@@ -745,6 +816,37 @@ function drawPlatforms() {
     }
   }
 }
+
+// Rysuje flagę punktu kontrolnego, zmieniając jej kolor po aktywowaniu.
+function drawCheckpoint() { // rysuje flagę wskazującą miejsce odrodzenia.
+  if (checkpoint) { // rysuje flagę tylko na poziomie, który ma punkt kontrolny.
+    ctx.fillStyle = "#f5f5f5"; // ustawia jasny kolor masztu flagi.
+    ctx.fillRect(checkpoint.x - 8, checkpoint.y - 22, 4, 72); // rysuje maszt od góry flagi do powierzchni platformy.
+    ctx.fillStyle = checkpoint.activated ? "#45d483" : "#ffcc00"; // aktywna flaga jest zielona, a nieaktywna złota.
+    ctx.beginPath(); // rozpoczyna kształt materiału flagi.
+    ctx.moveTo(checkpoint.x - 4, checkpoint.y - 22); // ustawia lewy górny narożnik flagi przy maszcie.
+    ctx.lineTo(checkpoint.x + 24, checkpoint.y - 12); // tworzy wystający prawy górny narożnik flagi.
+    ctx.lineTo(checkpoint.x - 4, checkpoint.y - 2); // tworzy dolny narożnik flagi.
+    ctx.closePath(); // zamyka trójkątny kształt flagi.
+    ctx.fill(); // wypełnia flagę wybranym kolorem.
+    ctx.fillStyle = "#222"; // ustawia ciemny kolor krótkiego napisu na fladze.
+    ctx.font = "bold 10px Arial"; // ustawia czytelną, małą czcionkę skrótu.
+    ctx.fillText(t("checkpointShort"), checkpoint.x, checkpoint.y - 11); // umieszcza skrót językowy na fladze.
+  } // kończy rysowanie flagi.
+} // kończy funkcję rysowania punktu kontrolnego.
+
+// Wyświetla krótkie potwierdzenie po aktywowaniu flagi albo odrodzeniu.
+function drawCheckpointNotice() { // pokazuje krótki komunikat o aktywacji lub odrodzeniu.
+  if (checkpointNoticeTimer > 0 && !isLevelThumbnail) { // pomija komunikat w małych miniaturach.
+    ctx.fillStyle = "rgba(0, 0, 0, 0.72)"; // ustawia półprzezroczyste tło dla napisu.
+    ctx.fillRect(canvas.width / 2 - 170, 118, 340, 42); // rysuje pasek komunikatu na górze planszy.
+    ctx.fillStyle = "white"; // ustawia jasny kolor tekstu komunikatu.
+    ctx.font = "18px Arial"; // dobiera rozmiar tekstu do szerokości planszy.
+    ctx.textAlign = "center"; // centruje napis względem środka płótna.
+    ctx.fillText(checkpointNoticeText, canvas.width / 2, 145); // wyświetla informację o punkcie kontrolnym.
+    ctx.textAlign = "left"; // przywraca domyślne wyrównanie dla pozostałych napisów.
+  } // kończy wyświetlanie komunikatu.
+} // kończy funkcję rysowania komunikatu.
 
 // Monety: złote koła, które lekko kołyszą się w górę i w dół
 function drawCoins() {
@@ -844,12 +946,14 @@ function draw() {
   drawBackground();
   drawGround();
   drawPlatforms();
+  drawCheckpoint(); // pokazuje lokalizację i stan flagi na planszy.
   drawCoins();
   drawSpikes();
   drawEnemies();
   drawPlayer();
   if (!isLevelThumbnail) { // pomija nieczytelny panel gry w małych miniaturach poziomów.
     drawHud(); // zostawia licznik punktów, poziomu i sterowania w normalnej grze.
+    drawCheckpointNotice(); // pokazuje potwierdzenie w pełnym widoku gry.
   }
 
   if (gameOver) {

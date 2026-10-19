@@ -25,6 +25,7 @@ const translations = {
     control1: "A/D albo strzałki lewo / prawo: ruch",
     control2: "Spacja albo strzałka w górę: skok",
     control3: "R: zacznij od nowa po końcu gry",
+    control4: "Dotknij złotej flagi, aby aktywować punkt kontrolny", // wyjaśnia sposób aktywowania checkpointu po polsku.
     footerText: "Zrobione przez Adrian, 2026",
     previewTitle: "Wypróbuj od razu",
     previewStart: "Kliknij, aby zagrać tutaj",
@@ -54,6 +55,7 @@ const translations = {
     control1: "A/D or left / right arrows: move",
     control2: "Space or up arrow: jump",
     control3: "R: restart after the game ends",
+    control4: "Touch the golden flag to activate a checkpoint", // explains how to activate checkpoints in English.
     footerText: "Made by Adrian, 2026",
     previewTitle: "Try it right now",
     previewStart: "Click to play here",
