@@ -27,6 +27,10 @@ const translations = {
     best: "Rekord: ",
     controls: "A/D lub strzałki: ruch, spacja: skok",
     mainMenu: "Menu główne",
+    touchControls: "Sterowanie dotykowe", // etykieta grupy przycisków dotykowych po polsku.
+    moveLeft: "Ruch w lewo", // opis dostępności przycisku ruchu w lewo po polsku.
+    moveRight: "Ruch w prawo", // opis dostępności przycisku ruchu w prawo po polsku.
+    jump: "Skok", // opis dostępności przycisku skoku po polsku.
     gameOverTitle: "Koniec gry!",
     gameOverHint: "Naciśnij R, aby zagrać jeszcze raz",
     checkpointShort: "PK", // krótki napis na fladze punktu kontrolnego.
@@ -42,6 +46,10 @@ const translations = {
     best: "Best: ",
     controls: "A/D or arrows: move, space: jump",
     mainMenu: "Main menu",
+    touchControls: "Touch controls", // label for the touch-control group in English.
+    moveLeft: "Move left", // accessible label for the left movement button.
+    moveRight: "Move right", // accessible label for the right movement button.
+    jump: "Jump", // accessible label for the jump button.
     gameOverTitle: "Game over!",
     gameOverHint: "Press R to play again",
     checkpointShort: "CP", // krótki angielski napis na fladze punktu kontrolnego.
@@ -67,6 +75,10 @@ function setLanguage(language) {
   document.documentElement.lang = language;            // ustawiamy język strony w znaczniku <html>
   langButton.textContent = language === "pl" ? "EN" : "PL"; // przycisk pokazuje język, na który się przełączy
   menuButton.textContent = t("mainMenu");
+  document.querySelector(".touch-controls").setAttribute("aria-label", t("touchControls")); // tłumaczy opis grupy przycisków dotykowych.
+  document.getElementById("touch-left").setAttribute("aria-label", t("moveLeft")); // tłumaczy opis przycisku ruchu w lewo.
+  document.getElementById("touch-right").setAttribute("aria-label", t("moveRight")); // tłumaczy opis przycisku ruchu w prawo.
+  document.getElementById("touch-jump").setAttribute("aria-label", t("jump")); // tłumaczy opis przycisku skoku.
 }
 
 // ===== DANE GRY =====
@@ -335,6 +347,32 @@ document.addEventListener("keydown", function (event) {
 document.addEventListener("keyup", function (event) {
   keys[event.code] = false;
 });
+
+// Łączy przytrzymanie ekranowego przycisku z odpowiednim klawiszem gry.
+function bindTouchButton(buttonId, keyCode) { // podpina dotykowy przycisk do istniejącego systemu sterowania.
+  const button = document.getElementById(buttonId); // pobiera przycisk z dokumentu HTML.
+  button.addEventListener("pointerdown", function (event) { // rozpoczyna ruch lub skok po dotknięciu przycisku.
+    event.preventDefault(); // zapobiega zaznaczaniu strony i gestom przeglądarki podczas gry.
+    keys[keyCode] = true; // zgłasza wciśnięty klawisz do logiki gry.
+    button.setPointerCapture(event.pointerId); // utrzymuje śledzenie dotyku, nawet gdy palec zsunie się z przycisku.
+  }); // kończy obsługę naciśnięcia przycisku dotykowego.
+  for (const eventName of ["pointerup", "pointercancel", "lostpointercapture"]) { // obsługuje zwykłe puszczenie i przerwanie dotyku.
+    button.addEventListener(eventName, function (event) { // kończy ruch lub skok po puszczeniu palca.
+      event.preventDefault(); // blokuje domyślne działanie przeglądarki na przycisku.
+      keys[keyCode] = false; // zwalnia klawisz, aby postać nie poruszała się dalej.
+    }); // kończy obsługę zwolnienia przycisku dotykowego.
+  } // kończy rejestrację zdarzeń kończących dotyk.
+} // kończy konfigurację pojedynczego przycisku dotykowego.
+
+bindTouchButton("touch-left", "KeyA"); // przypisuje lewy przycisk ekranowy do ruchu w lewo.
+bindTouchButton("touch-right", "KeyD"); // przypisuje prawy przycisk ekranowy do ruchu w prawo.
+bindTouchButton("touch-jump", "Space"); // przypisuje przycisk skoku do spacji.
+
+window.addEventListener("blur", function () { // czyści sterowanie, gdy użytkownik przełączy kartę lub aplikację.
+  for (const keyCode of Object.keys(keys)) { // przechodzi po wszystkich zapamiętanych klawiszach.
+    keys[keyCode] = false; // zwalnia klawisze, by ruch nie pozostał zablokowany po powrocie.
+  } // kończy zwalnianie zapamiętanych klawiszy.
+}); // kończy obsługę utraty fokusu okna gry.
 
 // ===== FUNKCJE POMOCNICZE =====
 // Sprawdza, czy dwa prostokąty (a i b) na siebie nachodzą. Zwraca true albo false.

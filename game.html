@@ -4,6 +4,7 @@
 <head>
   <!-- Kodowanie obsługujące polskie znaki. -->
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- dopasowuje stronę gry do szerokości i skali telefonu. -->
   <!-- Tytuł karty przeglądarki. -->
   <title>MY 2D GAME </title>
   <!-- Style widoku gry oraz miniatur poziomów. -->
@@ -16,6 +17,11 @@
   <button id="lang-button" class="lang-button">EN</button>
   <!-- Płótno 800 x 450 pikseli, na którym JavaScript rysuje grę. -->
   <canvas id="game" width="800" height="450"></canvas>
+  <div class="touch-controls" aria-label="Sterowanie dotykowe"> <!-- grupuje przyciski przeznaczone do gry na ekranie dotykowym. -->
+    <button id="touch-left" type="button" aria-label="Ruch w lewo">◀</button> <!-- przytrzymanie przesuwa postać w lewo. -->
+    <button id="touch-right" type="button" aria-label="Ruch w prawo">▶</button> <!-- przytrzymanie przesuwa postać w prawo. -->
+    <button id="touch-jump" type="button" aria-label="Skok">▲</button> <!-- przytrzymanie pozwala wykonywać skoki. -->
+  </div> <!-- kończy grupę przycisków dotykowych. -->
   <!-- Wczytuje logikę gry po utworzeniu elementów strony. -->
   <script src="game.js"></script>
 </body>

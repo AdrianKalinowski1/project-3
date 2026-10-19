@@ -428,6 +428,24 @@ footer p {
     gap: 12px;
   }
 
+  .level-node { /* zwiększa pole dotyku przy wyborze poziomu na telefonie. */
+    min-height: 48px; /* zapewnia przyciskowi wygodny rozmiar także dla palca. */
+    padding: 10px 8px; /* zachowuje odstęp tekstu od krawędzi wąskiej karty. */
+  } /* kończy mobilne dopasowanie przycisków poziomów. */
+
+  .level-details { /* dopasowuje dłuższe wyniki do wąskich miniatur. */
+    font-size: 0.72rem; /* utrzymuje statystyki w obrębie kafelka na małym ekranie. */
+  } /* kończy mobilne dopasowanie statystyk poziomu. */
+
+  .controls { /* zmniejsza boczne marginesy sekcji instrukcji. */
+    padding: 44px 16px; /* daje więcej miejsca na tekst przy szerokości telefonu. */
+  } /* kończy mobilne odstępy sekcji instrukcji. */
+
+  .controls li { /* poprawia czytelność instrukcji na wąskim ekranie. */
+    padding: 14px 16px; /* zachowuje wygodny obszar tekstu w każdym wierszu. */
+    overflow-wrap: anywhere; /* łamie długie słowa, zamiast rozszerzać stronę w bok. */
+  } /* kończy mobilne dopasowanie wierszy instrukcji. */
+
   /* Zmniejsza przycisk gry, aby dobrze mieścił się na telefonie. */
   .play-button {
     font-size: 1.25rem;

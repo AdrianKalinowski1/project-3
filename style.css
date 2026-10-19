@@ -3,6 +3,7 @@ body {
   margin: 0;
   background: #222;
   display: flex;
+  flex-direction: column; /* układa planszę i przyciski dotykowe jeden pod drugim. */
   justify-content: center;
   align-items: center;
   min-height: 100vh;
@@ -10,9 +11,18 @@ body {
 
 /* Stały rozmiar logiczny gry z jasną ramką. */
 canvas {
+  box-sizing: border-box; /* wlicza ramkę wymiary wyświetlanej planszy. */
+  display: block; /* usuwa wolną przestrzeń tekstową pod płótnem. */
+  width: min(100%, 800px); /* skaluje planszę do szerokości kontenera, nie powiększając jej ponad oryginał. */
+  height: auto; /* zachowuje proporcje planszy podczas zmniejszania. */
   background: #48d4ff;  /* niebo */
   border: 4px solid #fff;
 }
+
+/* Ukrywa przyciski dotykowe na standardowych ekranach komputerów. */
+.touch-controls { /* domyślnie ukrywa przyciski dotykowe na komputerze. */
+  display: none; /* pokazuje ekranowe sterowanie dopiero na urządzeniach mobilnych. */
+} /* kończy domyślne ukrycie sterowania dotykowego. */
 
 /* W miniaturze usuwa przewijanie i rozciąga stronę na wysokość ramki. */
 body.level-thumbnail {
@@ -69,9 +79,66 @@ body.level-thumbnail .lang-button {
   border: 2px solid white;
   border-radius: 20px;
   cursor: pointer;
-} 
+}
 
 /* Ciemniejsze tło po najechaniu na przycisk języka. */
 .lang-button:hover {
   background: rgba(0, 0, 0, 0.75);
 }
+
+/* Dopasowuje obszar gry i przyciski do telefonu lub innego ekranu dotykowego. */
+@media (pointer: coarse), (max-width: 700px) { /* włącza dotykowe sterowanie i responsywne wymiary na małych ekranach. */
+  body:not(.level-thumbnail) { /* stosuje układ mobilny tylko w pełnej grze, nie w miniaturach poziomów. */
+    box-sizing: border-box; /* uwzględnia bezpieczne marginesy w wysokości widoku. */
+    min-height: 100vh; /* zapas dla przeglądarek bez dynamicznej jednostki wysokości. */
+    min-height: 100dvh; /* dopasowuje tło do widocznego obszaru telefonu. */
+    gap: 12px; /* oddziela planszę od przycisków. */
+    padding: max(60px, env(safe-area-inset-top)) 0 max(12px, env(safe-area-inset-bottom)); /* zostawia miejsce na górne przyciski i bezpieczne krawędzie telefonu. */
+  } /* kończy mobilny układ pełnego widoku gry. */
+
+  body:not(.level-thumbnail) canvas { /* ogranicza planszę także w niskim widoku poziomym telefonu. */
+    width: min(100%, 800px, calc((100dvh - 170px) * 1.7778)); /* skaluje planszę do dostępnej szerokości i wysokości. */
+  } /* kończy skalowanie planszy mobilnej. */
+
+  body:not(.level-thumbnail) .touch-controls { /* pokazuje sterowanie wyłącznie w pełnej grze, nie w miniaturze. */
+    display: grid; /* rozmieszcza przyciski w równych kolumnach. */
+    box-sizing: border-box; /* wlicza wewnętrzne marginesy do szerokości sterowania. */
+    grid-template-columns: repeat(3, minmax(0, 1fr)); /* rezerwuje miejsce na lewo, prawo i skok. */
+    gap: 12px; /* ułatwia trafienie palcem w wybrany przycisk. */
+    width: min(100%, 420px); /* utrzymuje sterowanie w zasięgu kciuków. */
+    padding: 0 12px; /* oddala przyciski od krawędzi ekranu. */
+    touch-action: none; /* zapobiega przewijaniu strony podczas używania sterowania. */
+    user-select: none; /* blokuje zaznaczanie symboli na przyciskach. */
+    -webkit-user-select: none; /* blokuje zaznaczanie przycisków w przeglądarkach mobilnych WebKit. */
+  } /* kończy układ przycisków dotykowych. */
+
+  .touch-controls button { /* stylizuje wspólnie wszystkie przyciski dotykowe. */
+    min-height: 64px; /* zapewnia wygodny cel dotyku. */
+    color: white; /* kontrastuje symbol ze wspólnym ciemnym tłem. */
+    font: bold 1.7rem Arial, sans-serif; /* powiększa symbole sterowania. */
+    background: #383853; /* wyróżnia przyciski na tle strony gry. */
+    border: 2px solid #aaaabd; /* wyraźnie określa krawędzie przycisków. */
+    border-radius: 16px; /* zmiękcza kształt przycisków. */
+    touch-action: none; /* blokuje gesty przeglądarki na samym przycisku. */
+    -webkit-tap-highlight-color: transparent; /* usuwa niepasujące podświetlenie dotyku w Safari. */
+  } /* kończy styl wspólny przycisków dotykowych. */
+
+  .touch-controls button:active { /* pokazuje, który przycisk jest aktualnie przytrzymany. */
+    color: #222; /* poprawia kontrast symbolu na żółtym tle. */
+    background: #ffcc00; /* daje natychmiastową informację zwrotną po dotknięciu. */
+    border-color: white; /* wyraźnie obrysowuje aktywny przycisk. */
+  } /* kończy wygląd wciśniętego przycisku dotykowego. */
+
+  .menu-button { /* zmniejsza górny przycisk menu na wąskim ekranie. */
+    top: max(10px, env(safe-area-inset-top)); /* omija wcięcie i pasek stanu telefonu. */
+    right: 68px; /* zostawia wolne miejsce na przycisk języka. */
+    padding: 7px 10px; /* zmniejsza zajmowaną szerokość. */
+    font-size: 0.9rem; /* dopasowuje tekst menu do małego ekranu. */
+  } /* kończy mobilny wygląd przycisku menu. */
+
+  .lang-button { /* dopasowuje przycisk języka do górnej krawędzi telefonu. */
+    top: max(10px, env(safe-area-inset-top)); /* omija wcięcie i pasek stanu telefonu. */
+    right: 10px; /* zachowuje odstęp od prawej krawędzi. */
+    padding: 7px 10px; /* ułatwia zmieszczenie przycisku obok menu. */
+  } /* kończy mobilny wygląd przycisku języka. */
+} /* kończy reguły responsywne dla urządzeń dotykowych. */
