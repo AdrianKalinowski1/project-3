@@ -1,0 +1,11 @@
+<!-- Własna ikona strony przedstawiająca postać, monetę i platformę. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Granatowe tło z zaokrąglonymi rogami wyróżnia ikonę na karcie. -->
+  <rect width="64" height="64" rx="14" fill="#342b67"/>
+  <!-- Żółta moneta nawiązuje do zbieranych przedmiotów w grze. -->
+  <circle cx="47" cy="20" r="7" fill="#ffd34e"/>
+  <!-- Zielona platforma symbolizuje trasę parkourową. -->
+  <rect x="8" y="46" width="48" height="8" rx="4" fill="#55d68b"/>
+  <!-- Czerwony bohater wskazuje, że ikona należy do gry platformowej. -->
+  <rect x="20" y="27" width="16" height="19" rx="4" fill="#e94b4b"/>
+</svg>
