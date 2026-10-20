@@ -110,6 +110,77 @@ body::after { /* umieszcza drugą chmurkę po przeciwnej stronie strony. */
   outline-offset: 2px; /* oddziela obrys fokusu od kontrolki. */
 } /* kończy styl fokusu list wyboru. */
 
+/* Rozmieszcza próbki pod ustawieniami wyglądu, aby można je było porównać przed grą. */
+.music-preview { /* oddziela wybór muzyki od kolorów postaci i tła. */
+  margin-top: 26px; /* dodaje oddech pomiędzy wyglądem gry a próbkami. */
+  padding-top: 20px; /* oddziela nagłówek muzyki od górnej krawędzi sekcji. */
+  border-top: 1px solid rgba(255, 255, 255, 0.16); /* wizualnie grupuje ustawienia audio. */
+} /* kończy sekcję próbek muzycznych. */
+
+.music-preview h3 { /* nadaje nagłówkowi próbek czytelny, ale pomocniczy rozmiar. */
+  margin: 0 0 14px; /* oddziela nagłówek od kafelków próbek. */
+  font-size: 1.2rem; /* wyróżnia wybór muzyki bez rywalizacji z nagłówkiem całej sekcji. */
+} /* kończy nagłówek próbek. */
+
+.music-preview-options { /* układa cztery niezależne warianty do odsłuchania. */
+  display: grid; /* tworzy siatkę, która dopasowuje liczbę kolumn do ekranu. */
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* pokazuje tyle próbek w rzędzie, ile mieści się w panelu. */
+  gap: 10px; /* utrzymuje odstęp między klikalnymi próbkami. */
+} /* kończy siatkę próbek muzycznych. */
+
+.music-preview-option { /* tworzy czytelny, klikalny kafelek dla każdego stylu. */
+  display: flex; /* układa nazwę, opis i akcję w osobnych wierszach. */
+  flex-direction: column; /* ustawia treści jedna pod drugą. */
+  align-items: flex-start; /* wyrównuje opisy do lewej krawędzi. */
+  gap: 6px; /* oddziela nazwę, opis i informację o odsłuchu. */
+  min-height: 132px; /* utrzymuje równą wysokość wszystkich próbek. */
+  padding: 14px; /* tworzy wygodny obszar dotyku. */
+  color: #fff; /* zapewnia kontrast tekstu na ciemnym kafelku. */
+  text-align: left; /* ułatwia szybkie skanowanie opisów. */
+  background: #24243d; /* odróżnia próbki od tła panelu. */
+  border: 2px solid #515174; /* wyznacza krawędź kafelka. */
+  border-radius: 12px; /* dopasowuje kształt do pozostałych kart. */
+  cursor: pointer; /* wskazuje, że kafelek odtwarza i wybiera muzykę. */
+  transition: border-color 0.18s ease, background-color 0.18s ease, transform 0.18s ease; /* daje delikatną informację zwrotną. */
+} /* kończy wygląd kafelków muzycznych. */
+
+.music-preview-option:hover { /* podkreśla kafelek znajdujący się pod kursorem. */
+  background: #30304d; /* rozjaśnia tło po najechaniu. */
+  transform: translateY(-2px); /* subtelnie unosi aktywny kafelek. */
+} /* kończy efekt najechania. */
+
+.music-preview-option.selected { /* oznacza muzykę zapisaną jako wybrany podkład gry. */
+  border-color: #ffcc00; /* wyróżnia aktualnie wybrany styl złotą ramką. */
+} /* kończy zaznaczenie wybranego podkładu. */
+
+.music-preview-name { /* wyróżnia nazwę stylu na kafelku. */
+  font-weight: bold; /* pomaga odróżnić tytuł od opisu. */
+} /* kończy styl nazwy muzyki. */
+
+.music-preview-description { /* utrzymuje krótki opis czytelny pod nazwą. */
+  flex: 1; /* wyrównuje akcje odsłuchu do dołu kafelków. */
+  color: #d1d1e2; /* pokazuje opis spokojniejszym kolorem. */
+  font-size: 0.88rem; /* mieści opisy w wąskich kolumnach. */
+  line-height: 1.4; /* zachowuje wygodną wysokość wiersza. */
+} /* kończy styl opisu próbki. */
+
+.music-preview-action { /* podkreśla akcję odsłuchu w każdym kafelku. */
+  color: #ffe066; /* stosuje złoty kolor spójny z zaznaczeniem poziomów. */
+  font-size: 0.9rem; /* zachowuje akcję pomocniczą względem tytułu. */
+  font-weight: bold; /* wyróżnia odtwarzanie próbki. */
+} /* kończy styl akcji odsłuchu. */
+
+.music-preview-status { /* rezerwuje miejsce na dostępny dla czytnika komunikat audio. */
+  margin: 10px 0 0; /* oddziela komunikat od kafelków próbek. */
+  color: #ffe18a; /* utrzymuje widoczność informacji o obsłudze dźwięku. */
+  font-size: 0.9rem; /* zachowuje pomocniczy charakter komunikatu. */
+} /* kończy styl komunikatu próbek. */
+
+.music-preview-option:focus-visible { /* pokazuje wyraźny fokus przy sterowaniu klawiaturą. */
+  outline: 3px solid #fff; /* obrysowuje aktywny kafelek. */
+  outline-offset: 2px; /* oddziela obrys od krawędzi kafelka. */
+} /* kończy styl fokusu próbek. */
+
 /* Rysuje mały podgląd kolorowych elementów gry pod przyciskiem startu. */
 .hero-scene { /* wyznacza obszar ilustracji, aby elementy pozostały w jednej scenie. */
   position: relative; /* pozwala ustawiać platformy, postać i monety względem sceny. */

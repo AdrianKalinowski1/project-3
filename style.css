@@ -41,17 +41,37 @@ body.level-thumbnail canvas {
 
 /* Ukrywa elementy sterujące w miniaturach, aby nie zasłaniały planszy. */
 body.level-thumbnail .menu-button,
+body.level-thumbnail .game-appearance,
 body.level-thumbnail .audio-button, /* ukrywa przełącznik dźwięku w małych podglądach poziomów. */
 body.level-thumbnail .lang-button {
   display: none;
 }
+body.level-thumbnail .game-toolbar {
+  display: none;
+}
 
-/* Przycisk powrotu pozostaje w prawym górnym rogu ekranu gry. */
-.menu-button {
+body.game-preview .game-appearance { /* nie zasłania wyników w planszy uruchomionej w podglądzie strony głównej. */
+  display: none; /* ustawienia wyglądu są dostępne obok podglądu, na stronie głównej. */
+} /* kończy ukrywanie panelu wyglądu w podglądzie. */
+
+/* Ustawia przyciski menu, dźwięku i języka w jednym, równym rzędzie. */
+.game-toolbar {
   position: fixed;
   top: 16px;
-  right: 226px;
+  right: 16px;
   z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Wspólna wysokość i pozycjonowanie przycisków paska. */
+.menu-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  box-sizing: border-box;
   padding: 8px 16px;
   color: white;
   font: bold 1rem Arial, sans-serif;
@@ -61,12 +81,64 @@ body.level-thumbnail .lang-button {
   border-radius: 20px;
 }
 
+/* Ustawienia wyglądu pozostają dostępne w grze i zwijają się do małego przycisku. */
+.game-appearance { /* utrzymuje ustawienia w górnym rogu bez zajmowania miejsca na planszy. */
+  position: fixed; /* przypina przełącznik do okna przeglądarki. */
+  top: 16px; /* wyrównuje panel z przyciskami gry. */
+  left: 16px; /* ustawia panel po przeciwnej stronie niż menu i dźwięk. */
+  z-index: 10; /* pozwala panelowi otworzyć się nad płótnem gry. */
+  color: white; /* zapewnia czytelność tekstu na ciemnym panelu. */
+  font: bold 0.95rem Arial, sans-serif; /* dopasowuje podpis do pozostałych elementów sterujących. */
+} /* kończy pozycjonowanie ustawień wyglądu. */
+
+.game-appearance summary { /* stylizuje zwinięty przycisk ustawień wyglądu. */
+  padding: 9px 14px; /* tworzy wygodny cel kliknięcia i dotyku. */
+  list-style: none; /* usuwa standardowy znacznik szczegółów przeglądarki. */
+  background: rgba(0, 0, 0, 0.65); /* odcina przycisk od elementów gry. */
+  border: 2px solid white; /* wyznacza krawędź przycisku. */
+  border-radius: 20px; /* dopasowuje kształt do pozostałych przycisków. */
+  cursor: pointer; /* informuje, że przycisk otwiera panel. */
+} /* kończy wygląd przycisku ustawień. */
+
+.game-appearance summary::-webkit-details-marker { /* ukrywa natywny trójkąt w przeglądarkach WebKit. */
+  display: none; /* pozostawia widoczną tylko ikonę palety i nazwę. */
+} /* kończy ukrywanie znacznika rozwijania. */
+
+.game-appearance-panel { /* tworzy kompaktowy panel list wyboru wyglądu. */
+  display: grid; /* układa kolor i motyw w osobnych wierszach. */
+  gap: 10px; /* oddziela kontrolki, aby łatwo je wybrać. */
+  width: 220px; /* utrzymuje panel na tyle wąski, by nie zasłaniał gry. */
+  margin-top: 8px; /* oddziela panel od przycisku, który go otwiera. */
+  padding: 14px; /* dodaje przestrzeń wokół list wyboru. */
+  background: rgba(25, 27, 49, 0.96); /* zapewnia kontrast i czytelność nad planszą. */
+  border: 2px solid rgba(255, 255, 255, 0.8); /* wyznacza krawędzie rozwiniętego panelu. */
+  border-radius: 14px; /* dopasowuje panel do stylu gry. */
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35); /* oddziela panel od planszy. */
+} /* kończy układ panelu ustawień. */
+
+.game-appearance-panel label { /* grupuje podpis i listę każdej opcji wyglądu. */
+  display: grid; /* układa opis nad listą wyboru. */
+  gap: 5px; /* oddziela podpis od kontrolki. */
+} /* kończy układ pojedynczego pola ustawień. */
+
+.game-appearance-panel select { /* zapewnia czytelne i łatwe do dotknięcia listy wyboru. */
+  box-sizing: border-box; /* uwzględnia obramowanie w szerokości listy. */
+  width: 100%; /* rozciąga listę na szerokość panelu. */
+  min-height: 40px; /* zapewnia wygodną wysokość także na telefonie. */
+  padding: 7px 9px; /* ułatwia wybór tekstu. */
+  color: #222; /* utrzymuje kontrast tekstu na jasnej liście. */
+  font: 0.95rem Arial, sans-serif; /* zachowuje spójny, czytelny tekst. */
+  border: 1px solid #c8c8d8; /* oddziela listę od ciemnego panelu. */
+  border-radius: 8px; /* łagodzi kształt kontrolki. */
+} /* kończy styl list wyboru wyglądu. */
+
 /* Przycisk dźwięku jest widoczny obok menu i przełącznika języka. */
 .audio-button {
-  position: fixed; /* utrzymuje przełącznik w górnym pasku gry. */
-  top: 16px; /* wyrównuje przełącznik z menu i językiem. */
-  right: 142px; /* rezerwuje osobne miejsce pomiędzy menu i językiem. */
-  z-index: 10; /* umieszcza przycisk nad planszą. */
+  display: inline-flex; /* wyrównuje ikonę dźwięku z pozostałymi przyciskami paska. */
+  align-items: center; /* centruje ikonę w pionie. */
+  justify-content: center; /* centruje ikonę w poziomie. */
+  box-sizing: border-box; /* uwzględnia obramowanie w stałej wysokości paska. */
+  min-height: 42px; /* wyrównuje wysokość przycisku do menu i języka. */
   min-width: 64px; /* daje ikonę o wygodnym rozmiarze klikalnym. */
   padding: 8px 14px; /* oddziela ikonę od obramowania. */
   color: white; /* zapewnia kontrast ikony na ciemnym tle. */
@@ -90,10 +162,14 @@ body.level-thumbnail .lang-button {
 
 /* Przycisk zmiany języka przypięty w rogu ekranu. */
 .lang-button {
-  position: fixed;
-  top: 16px;
-  right: 16px;
-  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-width: 58px;
+  min-height: 42px;
+  position: static;
+  margin: 0;
   padding: 8px 16px;
   background: rgba(0, 0, 0, 0.5);
   color: white;
@@ -269,24 +345,28 @@ body.level-thumbnail .lang-button {
     border-color: white; /* wyraźnie obrysowuje aktywny przycisk. */
   } /* kończy wygląd wciśniętego przycisku dotykowego. */
 
-  .menu-button { /* zmniejsza górny przycisk menu na wąskim ekranie. */
+  .game-toolbar { /* utrzymuje równy odstęp przycisków także na telefonie. */
     top: max(10px, env(safe-area-inset-top)); /* omija wcięcie i pasek stanu telefonu. */
-    right: auto; /* nie nakłada menu na nowe przyciski w prawym górnym rogu. */
-    left: 10px; /* umieszcza menu po przeciwnej stronie ekranu telefonu. */
+    right: 10px; /* zachowuje bezpieczny odstęp od prawej krawędzi. */
+    gap: 8px; /* zmniejsza odstępy, aby pasek mieścił się na wąskim ekranie. */
+  } /* kończy mobilne dopasowanie paska sterującego. */
+
+  .menu-button { /* zmniejsza górny przycisk menu na wąskim ekranie. */
     padding: 7px 10px; /* zmniejsza zajmowaną szerokość. */
     font-size: 0.9rem; /* dopasowuje tekst menu do małego ekranu. */
   } /* kończy mobilny wygląd przycisku menu. */
 
-  .audio-button { /* ustawia przełącznik dźwięku między menu a językiem na telefonie. */
-    top: max(10px, env(safe-area-inset-top)); /* omija wcięcie i pasek stanu telefonu. */
-    right: 68px; /* zostawia wolne miejsce na przycisk języka. */
+  .game-appearance { /* umieszcza ustawienia pod menu, by nie zasłaniały przycisków górnego paska. */
+    top: max(54px, calc(env(safe-area-inset-top) + 44px)); /* zostawia odstęp pod przyciskiem menu. */
+    left: 10px; /* wyrównuje panel z menu na telefonie. */
+  } /* kończy mobilne pozycjonowanie ustawień wyglądu. */
+
+  .audio-button { /* dopasowuje przełącznik dźwięku do równego paska na telefonie. */
     min-width: 48px; /* utrzymuje wygodny obszar dotyku. */
     padding: 7px 10px; /* dopasowuje szerokość przycisku do małego ekranu. */
   } /* kończy mobilne ustawienie przycisku dźwięku. */
 
   .lang-button { /* dopasowuje przycisk języka do górnej krawędzi telefonu. */
-    top: max(10px, env(safe-area-inset-top)); /* omija wcięcie i pasek stanu telefonu. */
-    right: 10px; /* zachowuje odstęp od prawej krawędzi. */
     padding: 7px 10px; /* ułatwia zmieszczenie przycisku obok menu. */
   } /* kończy mobilny wygląd przycisku języka. */
 } /* kończy reguły responsywne dla urządzeń dotykowych. */

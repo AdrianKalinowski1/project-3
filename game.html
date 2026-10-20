@@ -13,12 +13,54 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- target="_top" sprawia, że menu działa również wewnątrz ramki podglądu. -->
-  <a id="menu-button" class="menu-button" href="index.html" target="_top">Menu główne</a>
-  <!-- Pozwala włączać lub wyciszać muzykę i efekty dźwiękowe gry. -->
-  <button id="audio-button" class="audio-button" type="button" aria-label="Wycisz dźwięk">🔊</button>
-  <!-- Przycisk zmieniający język napisów w grze. -->
-  <button id="lang-button" class="lang-button">EN</button>
+  <!-- Udostępnia zmianę wyglądu postaci i tła także podczas gry. -->
+  <details id="game-appearance" class="game-appearance">
+    <!-- Otwiera panel zmiany wyglądu bez zasłaniania gry, kiedy jest zamknięty. -->
+    <summary id="game-appearance-toggle">🎨 Wygląd</summary>
+    <!-- Grupuje wybór koloru postaci i motywu tła w małym panelu. -->
+    <div class="game-appearance-panel">
+      <!-- Łączy podpis z listą kolorów używaną także w menu głównym. -->
+      <label for="game-player-color"><span id="game-player-color-label">Kolor postaci</span>
+        <!-- Zawiera tę samą paletę kolorów, która jest zapisana w ustawieniach gry. -->
+        <select id="game-player-color">
+          <option value="#e94b4b">Czerwony</option>
+          <option value="#3988e8">Niebieski</option>
+          <option value="#38a86b">Zielony</option>
+          <option value="#a65be0">Fioletowy</option>
+          <option value="#f08a32">Pomarańczowy</option>
+        </select>
+      </label>
+      <!-- Łączy podpis z listą motywów tła dostępnych w grze. -->
+      <label for="game-background-theme"><span id="game-background-label">Motyw tła</span>
+        <!-- Zawiera te same motywy, które można wybrać na stronie głównej. -->
+        <select id="game-background-theme">
+          <option value="0">Domyślny</option>
+          <option value="1">Zachód słońca</option>
+          <option value="2">Noc</option>
+          <option value="3">Las</option>
+        </select>
+      </label>
+      <!-- Łączy wybór muzyki z podkładem odtwarzanym podczas rozgrywki. -->
+      <label for="game-music-style"><span id="game-music-label">Muzyka</span>
+        <!-- Udostępnia te same autorskie style, których próbki można odsłuchać w menu głównym. -->
+        <select id="game-music-style">
+          <option value="adventure">Przygodowa</option>
+          <option value="retro">Retro chiptune</option>
+          <option value="chill">Spokojna eksploracja</option>
+          <option value="arcade">Energetyczna arcade</option>
+        </select>
+      </label>
+    </div>
+  </details>
+  <!-- Grupuje menu, dźwięk i język w równym pasku sterującym. -->
+  <nav class="game-toolbar" aria-label="Ustawienia gry">
+    <!-- target="_top" sprawia, że menu działa również wewnątrz ramki podglądu. -->
+    <a id="menu-button" class="menu-button" href="index.html" target="_top">Menu główne</a>
+    <!-- Pozwala włączać lub wyciszać muzykę i efekty dźwiękowe gry. -->
+    <button id="audio-button" class="audio-button" type="button" aria-label="Wycisz dźwięk">🔊</button>
+    <!-- Przycisk zmieniający język napisów w grze. -->
+    <button id="lang-button" class="lang-button">EN</button>
+  </nav>
   <!-- Płótno 800 x 450 pikseli, na którym JavaScript rysuje grę. -->
   <canvas id="game" width="800" height="450"></canvas>
   <div class="touch-controls" aria-label="Sterowanie dotykowe"> <!-- grupuje przyciski przeznaczone do gry na ekranie dotykowym. -->
@@ -41,6 +83,7 @@
     </div> <!-- kończy kartę podsumowania zwycięstwa. -->
   </section> <!-- kończy pełnoekranowe podsumowanie zwycięstwa. -->
   <!-- Wczytuje logikę gry po utworzeniu elementów strony. -->
+  <script src="music.js"></script> <!-- udostępnia wspólne motywy muzyczne właściwej grze. -->
   <script src="game.js"></script>
 </body>
 </html>

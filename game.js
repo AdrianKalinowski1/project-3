@@ -5,6 +5,11 @@ const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 // Parametr URL uruchamia jednorazowe rysowanie planszy zamiast pełnej gry, gdy tworzymy miniaturę.
 const isLevelThumbnail = new URLSearchParams(window.location.search).get("thumbnail") === "1";
+// Parametr URL oznacza grę uruchomioną wewnątrz podglądu na stronie głównej.
+const isGamePreview = new URLSearchParams(window.location.search).get("preview") === "1";
+if (isGamePreview) { // oznacza podgląd, aby jego interfejs nie zasłaniał wyników na planszy.
+  document.body.classList.add("game-preview");
+} // kończy oznaczanie podglądu gry.
 
 // Wysokość podłogi: wszystko poniżej linii y = 400 to ziemia
 const groundY = 400;
@@ -16,6 +21,13 @@ const respawnDelay = 180;
 // Przycisk zmiany języka z pliku game.html
 const langButton = document.getElementById("lang-button");
 const audioButton = document.getElementById("audio-button"); // pobiera przycisk włączania i wyciszania gry.
+const gamePlayerColorSelect = document.getElementById("game-player-color"); // pobiera wybór koloru postaci z ekranu gry.
+const gameBackgroundThemeSelect = document.getElementById("game-background-theme"); // pobiera wybór tła z ekranu gry.
+const gameMusicStyleSelect = document.getElementById("game-music-style"); // pobiera wybór muzyki do bieżącej rozgrywki.
+const gameAppearanceToggle = document.getElementById("game-appearance-toggle"); // pobiera przycisk otwierania ustawień wyglądu.
+const gamePlayerColorLabel = document.getElementById("game-player-color-label"); // pobiera podpis listy kolorów postaci.
+const gameBackgroundLabel = document.getElementById("game-background-label"); // pobiera podpis listy motywów tła.
+const gameMusicLabel = document.getElementById("game-music-label"); // pobiera podpis listy stylów muzyki.
 // Link powrotu do menu; jego tekst zmienia się razem z językiem gry.
 const menuButton = document.getElementById("menu-button");
 const victoryScreen = document.getElementById("victory-screen"); // pobiera ukryte podsumowanie końcowe z dokumentu gry.
@@ -39,6 +51,13 @@ const translations = {
     timer: "Czas: ", // podpis licznika czasu aktualnego poziomu.
     controls: "A/D lub strzałki: ruch, spacja: skok",
     mainMenu: "Menu główne",
+    appearance: "🎨 Wygląd", // otwiera ustawienia koloru postaci i motywu tła.
+    playerColor: "Kolor postaci", // podpis wyboru koloru postaci w trakcie gry.
+    backgroundTheme: "Motyw tła", // podpis wyboru tła w trakcie gry.
+    colorOptions: ["Czerwony", "Niebieski", "Zielony", "Fioletowy", "Pomarańczowy"], // tłumaczy opcje kolorów postaci.
+    themeOptions: ["Domyślny", "Zachód słońca", "Noc", "Las"], // tłumaczy opcje motywu tła.
+    musicStyle: "Styl muzyki", // podpis listy podkładów muzycznych w grze.
+    musicOptions: ["Przygodowa", "Retro chiptune", "Spokojna eksploracja", "Energetyczna arcade"], // nazwy dostępnych stylów muzyki.
     soundOn: "Wycisz dźwięk", // opisuje przycisk, gdy muzyka i efekty są włączone.
     soundOff: "Włącz dźwięk", // opisuje przycisk, gdy muzyka i efekty są wyciszone.
     touchControls: "Sterowanie dotykowe", // etykieta grupy przycisków dotykowych po polsku.
@@ -72,6 +91,13 @@ const translations = {
     timer: "Time: ", // label for the current level timer.
     controls: "A/D or arrows: move, space: jump",
     mainMenu: "Main menu",
+    appearance: "🎨 Appearance", // opens the character color and background theme settings.
+    playerColor: "Character color", // label for changing the character color during a game.
+    backgroundTheme: "Background theme", // label for changing the background during a game.
+    colorOptions: ["Red", "Blue", "Green", "Purple", "Orange"], // translates the character color options.
+    themeOptions: ["Default", "Sunset", "Night", "Forest"], // translates the background theme options.
+    musicStyle: "Music style", // label for the selectable soundtrack during a game.
+    musicOptions: ["Adventure", "Retro chiptune", "Calm exploration", "Energetic arcade"], // translates the available soundtrack styles.
     soundOn: "Mute sound", // labels the button while music and effects are enabled.
     soundOff: "Turn sound on", // labels the button while music and effects are muted.
     touchControls: "Touch controls", // label for the touch-control group in English.
@@ -115,6 +141,13 @@ function setLanguage(language) {
   document.documentElement.lang = language;            // ustawiamy język strony w znaczniku <html>
   langButton.textContent = language === "pl" ? "EN" : "PL"; // przycisk pokazuje język, na który się przełączy
   menuButton.textContent = t("mainMenu");
+  gameAppearanceToggle.textContent = t("appearance"); // tłumaczy przycisk ustawień wyglądu.
+  gamePlayerColorLabel.textContent = t("playerColor"); // tłumaczy podpis listy kolorów.
+  gameBackgroundLabel.textContent = t("backgroundTheme"); // tłumaczy podpis listy motywów tła.
+  gameMusicLabel.textContent = t("musicStyle"); // tłumaczy podpis listy dostępnych podkładów muzycznych.
+  Array.from(gamePlayerColorSelect.options).forEach(function (option, index) { option.textContent = t("colorOptions")[index]; }); // aktualizuje nazwy kolorów w wybranym języku.
+  Array.from(gameBackgroundThemeSelect.options).forEach(function (option, index) { option.textContent = t("themeOptions")[index]; }); // aktualizuje nazwy motywów w wybranym języku.
+  Array.from(gameMusicStyleSelect.options).forEach(function (option, index) { option.textContent = t("musicOptions")[index]; }); // aktualizuje nazwy stylów muzyki w wybranym języku.
   updateAudioButton(); // ustawia opis dostępności przycisku dźwięku w wybranym języku.
   document.querySelector(".touch-controls").setAttribute("aria-label", t("touchControls")); // tłumaczy opis grupy przycisków dotykowych.
   document.getElementById("touch-left").setAttribute("aria-label", t("moveLeft")); // tłumaczy opis przycisku ruchu w lewo.
@@ -176,6 +209,7 @@ let completedLevelStars = 0; // przechowuje liczbę gwiazdek w podsumowaniu pozi
 let completedLevelCoins = 0; // przechowuje liczbę zebranych monet w podsumowaniu poziomu.
 let completedLevelScore = 0; // przechowuje punkty zdobyte w ukończonym poziomie.
 let gameOver = false;  // czy gracz przegrał
+let gameOverSoundPlayed = false; // zapobiega powtarzaniu dźwięku końca gry w każdej klatce.
 let gameWon = false;   // czy gracz wygrał całą grę
 let checkpoint = null; // aktywny punkt kontrolny bieżącego poziomu albo null, gdy go nie ma.
 let checkpointNoticeTimer = 0; // liczba klatek, przez które pokazujemy komunikat o punkcie kontrolnym.
@@ -184,7 +218,12 @@ const audioStorageKey = "gameAudioEnabled"; // klucz pamięci wyboru muzyki i ef
 let audioEnabled = localStorage.getItem(audioStorageKey) !== "false"; // włącza dźwięk domyślnie i pamięta wyciszenie.
 let audioContext = null; // przechowuje kontekst dźwięku tworzony po pierwszej interakcji.
 let musicInterval = null; // przechowuje zegar odtwarzający kolejne nuty muzyki.
-let musicStep = 0; // wskazuje kolejną nutę w krótkiej pętli retro.
+let musicStep = 0; // wskazuje kolejny rytmiczny krok w melodii platformówki.
+const musicStyleKey = "musicStyle"; // klucz pamięci wybranego stylu muzyki.
+const validMusicStyles = Object.keys(window.platformerMusic.tracks); // pobiera listę dostępnych, wspólnych stylów muzycznych.
+const savedMusicStyle = localStorage.getItem(musicStyleKey); // odczytuje wybrany wcześniej podkład.
+let currentMusicStyle = validMusicStyles.includes(savedMusicStyle) ? savedMusicStyle : "adventure"; // wybiera zapisany, rozpoznany styl albo wariant przygodowy.
+gameMusicStyleSelect.value = currentMusicStyle; // pokazuje bieżący styl w panelu gry.
 
 // Odświeża ikonę oraz etykietę dostępności przycisku audio.
 function updateAudioButton() { // pokazuje, czy muzyka i efekty są aktualnie włączone.
@@ -231,15 +270,14 @@ function playTone(frequency, duration, waveform, volume, delay) { // tworzy dźw
   oscillator.stop(startsAt + duration + 0.03); // zatrzymuje generator po wyciszeniu.
 } // kończy syntezę pojedynczej nuty.
 
-// Odtwarza muzykę w stylu retro jako zapętloną melodię z basem.
-function playMusicStep() { // gra kolejną nutę melodii i co kilka kroków dodaje bas.
-  const melody = [523, 659, 784, 659, 587, 698, 880, 698, 523, 659, 784, 1047, 880, 784, 659, 587]; // układa lekką, oryginalną melodię ośmiobitową.
-  const note = melody[musicStep % melody.length]; // wybiera nutę i wraca na początek po końcu melodii.
-  playTone(note, 0.19, "square", 0.018, 0); // odtwarza cichą, krótką nutę melodii.
-  if (musicStep % 4 === 0) { // dodaje bas tylko raz na cztery nuty.
-    playTone(note / 2, 0.34, "triangle", 0.025, 0); // wspiera melodię miękką niską nutą.
-  } // kończy warunek dodawania basu.
-  musicStep++; // przechodzi do następnej nuty w pętli.
+// Odtwarza kolejny krok bieżącego podkładu platformówki.
+function playMusicStep() { // przekazuje kolejny krok wybranemu wspólnemu motywowi.
+  const context = getAudioContext(); // korzysta z kontekstu działającego już w grze.
+  if (!context) { // nie próbuje odtwarzać muzyki po wyciszeniu.
+    return; // pozostawia efekty i logikę gry bez zmian.
+  } // kończy kontrolę audio.
+  window.platformerMusic.playStep(context, currentMusicStyle, musicStep); // odtwarza krok wybranego stylu.
+  musicStep++; // przechodzi do następnego kroku motywu.
 } // kończy odtwarzanie jednego kroku muzyki.
 
 // Uruchamia muzykę po pierwszej czynności gracza, zgodnie z ograniczeniami przeglądarki.
@@ -251,7 +289,7 @@ function startAudio() { // przygotowuje tło muzyczne tylko raz na kartę gry.
     return; // zatrzymuje start, gdy przeglądarka nie obsługuje Web Audio.
   } // kończy sprawdzanie kontekstu audio.
   playMusicStep(); // odtwarza pierwszą nutę od razu po interakcji gracza.
-  musicInterval = window.setInterval(playMusicStep, 240); // kontynuuje spokojną melodię w krótkiej pętli.
+  musicInterval = window.setInterval(playMusicStep, window.platformerMusic.tracks[currentMusicStyle].stepMs); // utrzymuje tempo wybranego stylu.
 } // kończy uruchamianie muzyki.
 
 // Kończy odtwarzanie melodii, gdy użytkownik wyciszy grę.
@@ -276,6 +314,10 @@ function playSoundEffect(effect) { // wybiera oryginalne tony dla skoku, monety 
     playTone(330, 0.1, "square", 0.035, 0); // daje krótkie dźwiękowe potwierdzenie trafienia.
   } else if (effect === "death") { // rozpoznaje zderzenie kończące próbę.
     playTone(260, 0.24, "sawtooth", 0.035, 0); // odtwarza krótki, opadający ton porażki.
+  } else if (effect === "gameOver") { // rozpoznaje definitywny koniec gry bez dalszego odrodzenia.
+    playTone(392, 0.2, "square", 0.04, 0); // rozpoczyna sygnał końca gry średnim tonem.
+    playTone(330, 0.22, "square", 0.04, 0.18); // obniża drugą nutę sygnału.
+    playTone(262, 0.42, "triangle", 0.05, 0.38); // kończy sygnał niską, dłuższą nutą.
   } else if (effect === "complete") { // rozpoznaje ukończenie poziomu.
     playTone(523, 0.16, "triangle", 0.05, 0); // rozpoczyna krótką fanfarę ukończenia.
     playTone(659, 0.16, "triangle", 0.05, 0.14); // rozwija fanfarę na wyższy ton.
@@ -314,6 +356,37 @@ const backgroundThemes = [
 const backgroundThemeStorageKey = "backgroundTheme"; // klucz ustawienia motywu wybranego w menu.
 let backgroundThemeOffset = Number(localStorage.getItem(backgroundThemeStorageKey)); // odczytuje numer motywu początkowego z pamięci.
 backgroundThemeOffset = Number.isInteger(backgroundThemeOffset) && backgroundThemeOffset >= 0 && backgroundThemeOffset < backgroundThemes.length ? backgroundThemeOffset : 0; // przywraca domyślny motyw, gdy zapis jest nieprawidłowy.
+gamePlayerColorSelect.value = Object.prototype.hasOwnProperty.call(playerColors, savedPlayerColor) ? savedPlayerColor : "#e94b4b"; // przywraca kolor zapisany wcześniej w menu głównym.
+gameBackgroundThemeSelect.value = String(backgroundThemeOffset); // przywraca motyw zapisany wcześniej w menu głównym.
+
+// Zapisuje ustawienia zmienione w trakcie gry i natychmiast aktualizuje planszę.
+gamePlayerColorSelect.addEventListener("change", function () { // reaguje na wybór nowego koloru postaci.
+  player.color = playerColors[gamePlayerColorSelect.value]; // zmienia kolor bohatera na aktywnej planszy.
+  localStorage.setItem("playerColor", gamePlayerColorSelect.value); // synchronizuje wybór ze stroną główną i innymi kartami.
+}); // kończy obsługę koloru postaci w grze.
+
+// Zapisuje wybrany motyw i stosuje go jako początek rotacji tła poziomów.
+gameBackgroundThemeSelect.addEventListener("change", function () { // reaguje na wybór nowego motywu tła.
+  backgroundThemeOffset = Number(gameBackgroundThemeSelect.value); // natychmiast zmienia tło widocznego poziomu.
+  localStorage.setItem(backgroundThemeStorageKey, String(backgroundThemeOffset)); // synchronizuje motyw ze stroną główną i innymi kartami.
+}); // kończy obsługę motywu tła w grze.
+
+// Stosuje wybrany podkład i od razu przełącza działającą pętlę muzyczną.
+function applyMusicStyle(style) { // waliduje styl i zmienia muzykę bez restartu poziomu.
+  currentMusicStyle = validMusicStyles.includes(style) ? style : "adventure"; // akceptuje wyłącznie jeden z dostępnych podkładów.
+  gameMusicStyleSelect.value = currentMusicStyle; // synchronizuje listę wyboru z aktywną muzyką.
+  musicStep = 0; // rozpoczyna nowy styl od początku melodii.
+  if (musicInterval !== null) { // zmienia tempo natychmiast, gdy muzyka już gra.
+    window.clearInterval(musicInterval); // zatrzymuje zegar poprzedniego motywu.
+    playMusicStep(); // odtwarza początek wybranego motywu od razu.
+    musicInterval = window.setInterval(playMusicStep, window.platformerMusic.tracks[currentMusicStyle].stepMs); // kontynuuje muzykę w tempie nowego stylu.
+  } // kończy przełączanie działającej muzyki.
+} // kończy stosowanie nowego podkładu.
+
+gameMusicStyleSelect.addEventListener("change", function () { // reaguje na wybór nowej muzyki w trakcie gry.
+  applyMusicStyle(gameMusicStyleSelect.value); // natychmiast stosuje wybrany podkład.
+  localStorage.setItem(musicStyleKey, currentMusicStyle); // synchronizuje wybór ze stroną główną i innymi kartami.
+}); // kończy obsługę wyboru stylu muzyki.
 
 // Rząd kolców na ziemi: startX = gdzie zaczyna się rząd, count = ile kolców
 function spikeRow(startX, count) {
@@ -569,11 +642,16 @@ window.addEventListener("storage", function (event) { // aktualizuje wygląd gry
   } // kończy obsługę zmiany ustawień dźwięku.
   if (event.key === "playerColor") { // reaguje wyłącznie na zmianę koloru postaci.
     player.color = Object.prototype.hasOwnProperty.call(playerColors, event.newValue) ? playerColors[event.newValue] : "#e94b4b"; // przyjmuje tylko dozwolony kolor albo wraca do czerwieni.
+    gamePlayerColorSelect.value = player.color; // synchronizuje wybór na ekranie gry z inną kartą lub menu.
   } // kończy aktualizowanie koloru postaci.
   if (event.key === backgroundThemeStorageKey) { // reaguje wyłącznie na zmianę motywu tła.
     const selectedTheme = Number(event.newValue); // zamienia zapisany numer motywu na liczbę.
     backgroundThemeOffset = Number.isInteger(selectedTheme) && selectedTheme >= 0 && selectedTheme < backgroundThemes.length ? selectedTheme : 0; // waliduje numer albo ustawia motyw domyślny.
+    gameBackgroundThemeSelect.value = String(backgroundThemeOffset); // aktualizuje listę motywów, gdy wybór zmienił się poza grą.
   } // kończy aktualizowanie motywu tła.
+  if (event.key === musicStyleKey) { // reaguje na zmianę stylu muzyki w menu lub innej karcie.
+    applyMusicStyle(event.newValue); // synchronizuje listę i od razu przełącza aktywny podkład.
+  } // kończy synchronizację muzyki między kartami.
 }); // kończy synchronizację wyglądu między kartami.
 
 // ===== FUNKCJE POMOCNICZE =====
@@ -644,6 +722,7 @@ function loadLevel(index) {
     : null; // pozostawia poziom bez punktu kontrolnego, jeśli nie został skonfigurowany.
   checkpointNoticeTimer = 0; // usuwa komunikat poprzedniego poziomu.
   checkpointNoticeText = ""; // czyści tekst poprzedniego komunikatu.
+  gameOverSoundPlayed = false; // uzbraja dźwięk końca gry na nowym poziomie lub po restarcie.
 
   // Pozycja startowa gracza na początku każdego poziomu
   player.x = 50;
@@ -957,7 +1036,9 @@ function checkSpikes() {
     if (isOverlapping(player, spike)) {
       if (!gameOver) { // odtwarza dźwięk tylko przy pierwszym zderzeniu w tej klatce.
         gameOver = true; // zatrzymuje grę po trafieniu w kolce.
-        playSoundEffect("death"); // informuje dźwiękiem o śmierci postaci.
+        if (checkpoint && checkpoint.activated) { // przy checkpointcie śmierć oznacza odrodzenie, a nie koniec gry.
+          playSoundEffect("death"); // odtwarza dźwięk błędu przed powrotem do flagi.
+        } // kończy odtwarzanie dźwięku śmierci przy odrodzeniu.
       } // kończy obsługę śmierci od kolców.
     }
   }
@@ -980,7 +1061,9 @@ function checkEnemies() {
         // dotknięcie z boku -> koniec gry
         if (!gameOver) { // zapobiega wielokrotnemu odtwarzaniu dźwięku śmierci.
           gameOver = true; // zatrzymuje grę po kontakcie z wrogiem z boku.
-          playSoundEffect("death"); // informuje dźwiękiem o przegranej.
+          if (checkpoint && checkpoint.activated) { // sprawdza, czy po zderzeniu postać wróci do aktywnej flagi.
+            playSoundEffect("death"); // sygnalizuje błąd zakończony odrodzeniem.
+          } // kończy warunek dźwięku przy checkpointcie.
         } // kończy obsługę śmierci od przeciwnika.
       }
     }
@@ -991,6 +1074,7 @@ function checkEnemies() {
 function checkLevelComplete() {
   // "every" sprawdza, czy KAŻDA moneta jest zebrana; warunek !gameOver = nie przechodzimy dalej, gdy właśnie zginąłeś
   if (!gameOver && coins.every(function (coin) { return coin.collected; })) {
+    stopAudio(); // zatrzymuje muzykę w tle przed rozpoczęciem fanfary ukończenia.
     playSoundEffect("complete"); // odtwarza fanfarę za ukończenie poziomu.
     nextLevel();
   }
@@ -1043,6 +1127,11 @@ function update() {
   if (gameOver && checkpoint && checkpoint.activated) { // sprawdza, czy śmierć nastąpiła po aktywowaniu punktu kontrolnego.
     respawnAtCheckpoint(); // odradza postać zamiast kończyć grę.
   } // kończy obsługę automatycznego odrodzenia.
+  if (gameOver && !gameOverSoundPlayed) { // odtwarza sygnał tylko przy definitywnym końcu gry.
+    gameOverSoundPlayed = true; // blokuje ponowne odtwarzanie sygnału w następnych klatkach.
+    stopAudio(); // zatrzymuje muzykę, aby nie zagłuszała dźwięku końca gry.
+    playSoundEffect("gameOver"); // odtwarza odrębny sygnał po porażce.
+  } // kończy jednorazową obsługę dźwięku game over.
   // Po końcu gry klawisz R uruchamia grę od nowa
   if ((gameOver || levelComplete) && keys["KeyR"]) { // pozwala zacząć poziom od nowa także z ekranu podsumowania.
     restartGame();

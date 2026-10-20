@@ -16,6 +16,18 @@ const translations = {
     themeSunset: "Zachód słońca", // polska nazwa motywu zachodzącego słońca.
     themeNight: "Noc", // polska nazwa nocnego motywu z gwiazdami.
     themeForest: "Las", // polska nazwa zielonego motywu.
+    musicPreviewTitle: "Wybierz muzykę i odsłuchaj próbkę", // nagłówek sekcji próbek muzycznych.
+    musicAdventure: "Przygodowa", // nazwa melodycznej muzyki platformowej.
+    musicAdventureHint: "Skoczna melodia, ciepłe akordy i lekki rytm.", // krótki opis stylu przygodowego.
+    musicRetro: "Retro chiptune", // nazwa muzyki w stylu gier 8-bitowych.
+    musicRetroHint: "Klasyczne brzmienie gier 8-bitowych.", // krótki opis stylu retro.
+    musicChill: "Spokojna eksploracja", // nazwa spokojniejszej muzyki.
+    musicChillHint: "Wolniejsze tempo i miękkie dźwięki.", // krótki opis spokojnego stylu.
+    musicArcade: "Energetyczna arcade", // nazwa szybkiego stylu arcade.
+    musicArcadeHint: "Szybki rytm do dynamicznych poziomów.", // krótki opis szybkiego stylu.
+    musicListen: "▶ Odsłuchaj", // zachęca do odsłuchania krótkiej próbki.
+    musicPlaying: "■ Odtwarzam…", // informuje, który podkład jest aktualnie próbkowany.
+    musicUnavailable: "Przeglądarka nie obsługuje odtwarzania próbek audio.", // wyjaśnia, gdy Web Audio jest niedostępne.
     levelMapTitle: "Droga przez poziomy",
     levelMapHint: "Ukończ poziom, by odblokować następny. 1★ za wszystkie monety, 2★ poniżej 40 s, 3★ poniżej 15 s.",
     levelLabel: "Poziom ",
@@ -64,6 +76,18 @@ const translations = {
     themeSunset: "Sunset", // English name for the warm sunset theme.
     themeNight: "Night", // English name for the starry night theme.
     themeForest: "Forest", // English name for the green theme.
+    musicPreviewTitle: "Choose a soundtrack and hear a sample", // heading for the music samples.
+    musicAdventure: "Adventure", // name of the melodic platformer soundtrack.
+    musicAdventureHint: "Bouncy melody, warm chords and a light beat.", // short description of the adventure style.
+    musicRetro: "Retro chiptune", // name of the 8-bit game soundtrack.
+    musicRetroHint: "Classic sounds inspired by 8-bit games.", // short description of the retro style.
+    musicChill: "Calm exploration", // name of the calmer soundtrack.
+    musicChillHint: "A slower pace with softer sounds.", // short description of the calm style.
+    musicArcade: "Energetic arcade", // name of the fast arcade soundtrack.
+    musicArcadeHint: "A fast beat for action-packed levels.", // short description of the arcade style.
+    musicListen: "▶ Listen", // invites the player to hear a short sample.
+    musicPlaying: "■ Playing…", // identifies the soundtrack currently being previewed.
+    musicUnavailable: "This browser does not support audio previews.", // explains when Web Audio is unavailable.
     levelMapTitle: "Level path",
     levelMapHint: "Finish a level to unlock the next. 1★ for all coins, 2★ under 40 sec, 3★ under 15 sec.",
     levelLabel: "Level ",
@@ -122,6 +146,7 @@ const langButton = document.getElementById("lang-button");
 // Kliknięcie przełącza język i odświeża teksty na kafelkach poziomów.
 langButton.addEventListener("click", function () {
   setLanguage(currentLanguage === "pl" ? "en" : "pl");
+  refreshMusicPreviewButtons();
   updateLevelPath();
 });
 // Przywraca ostatni zapisany język, jeśli jest jednym z obsługiwanych.
@@ -136,7 +161,17 @@ const levelPath = document.getElementById("level-path");
 const playButton = document.querySelector(".play-button");
 const playerColorSelect = document.getElementById("player-color"); // pobiera listę kolorów bohatera.
 const backgroundThemeSelect = document.getElementById("background-theme"); // pobiera listę początkowych motywów tła.
+const musicPreviewButtons = Array.from(document.querySelectorAll(".music-preview-option")); // pobiera kafelki z próbkami muzyki.
+const musicPreviewStatus = document.getElementById("music-preview-status"); // pobiera miejsce na informację o niedostępności audio.
 let previewIframe;
+const musicStyleKey = "musicStyle"; // klucz pamięci wybranego podkładu muzycznego.
+const savedMusicStyle = localStorage.getItem(musicStyleKey); // odczytuje ostatnio wybrany styl muzyki.
+let selectedMusicStyle = Object.prototype.hasOwnProperty.call(window.platformerMusic.tracks, savedMusicStyle) ? savedMusicStyle : "adventure"; // odrzuca nieznany styl i wybiera wariant przygodowy.
+let musicPreviewContext = null; // przechowuje kontekst do odtwarzania krótkich próbek.
+let musicPreviewInterval = null; // przechowuje zegar kolejnych nut odsłuchu.
+let musicPreviewTimeout = null; // ogranicza próbkę do kilku sekund.
+let musicPreviewStep = 0; // wskazuje kolejną nutę aktualnej próbki.
+let playingMusicStyle = null; // zapamiętuje styl aktualnie odtwarzanej próbki.
 // Poziom wybrany na mapie; na początku zaznaczony jest pierwszy.
 let selectedLevel = 1;
 // Liczba poziomów w grze oraz klucz, pod którym zapisano postęp.
@@ -156,6 +191,69 @@ function updateAppearanceSettings() { // synchronizuje listy wyglądu z pamięci
   document.documentElement.style.setProperty("--player-color", playerColorSelect.value); // aktualizuje kolor bohatera w ozdobnej ilustracji strony.
 } // kończy przywracanie ustawień wyglądu.
 
+// Oznacza wybrany styl i aktualizuje etykiety przycisków po zmianie języka.
+function refreshMusicPreviewButtons() { // utrzymuje kafelki zsynchronizowane z wybranym podkładem.
+  for (const button of musicPreviewButtons) { // przechodzi po wszystkich dostępnych próbkach.
+    const style = button.dataset.musicStyle; // odczytuje identyfikator muzyki z kafelka.
+    button.classList.toggle("selected", style === selectedMusicStyle); // wyróżnia styl zapisany dla gry.
+    button.setAttribute("aria-pressed", String(style === selectedMusicStyle)); // udostępnia wybór technologiom asystującym.
+    const action = button.querySelector(".music-preview-action"); // pobiera etykietę odtwarzania próbki.
+    action.textContent = translations[currentLanguage][style === playingMusicStyle ? "musicPlaying" : "musicListen"]; // pokazuje, która próbka aktualnie gra.
+  } // kończy odświeżanie kafelków muzyki.
+} // kończy aktualizowanie wyboru podkładu.
+
+// Zatrzymuje planowanie kolejnych nut i przywraca kafelkom etykiety odsłuchu.
+function stopMusicPreview() { // kończy aktualnie odtwarzaną krótką próbkę.
+  if (musicPreviewInterval !== null) { // sprawdza, czy próbka ma aktywny zegar.
+    window.clearInterval(musicPreviewInterval); // zatrzymuje planowanie kolejnych nut.
+    musicPreviewInterval = null; // oznacza, że próbka już nie jest odtwarzana.
+  } // kończy zatrzymywanie zegara próbek.
+  if (musicPreviewTimeout !== null) { // sprawdza, czy zaplanowano automatyczne zakończenie.
+    window.clearTimeout(musicPreviewTimeout); // usuwa poprzedni limit czasu.
+    musicPreviewTimeout = null; // czyści uchwyt limitu.
+  } // kończy czyszczenie limitu próbki.
+  playingMusicStyle = null; // czyści identyfikator aktualnego odsłuchu.
+  refreshMusicPreviewButtons(); // przywraca przyciskom etykiety odtwarzania.
+} // kończy bieżący odsłuch.
+
+// Zapisuje wybrany podkład i odtwarza jego krótki fragment do porównania.
+function previewMusicStyle(style) { // wybiera styl gry i uruchamia odsłuch na żądanie.
+  if (!Object.prototype.hasOwnProperty.call(window.platformerMusic.tracks, style)) { // nie przyjmuje identyfikatorów spoza listy.
+    return; // ignoruje nieznaną wartość bez zmieniania ustawień.
+  } // kończy walidację wybranego stylu.
+  selectedMusicStyle = style; // ustawia styl przeznaczony do gry.
+  localStorage.setItem(musicStyleKey, selectedMusicStyle); // zachowuje wybór po odświeżeniu.
+  refreshMusicPreviewButtons(); // zaznacza wybrany kafelek.
+  if (!window.AudioContext) { // sprawdza obsługę generowania próbek w przeglądarce.
+    musicPreviewStatus.textContent = translations[currentLanguage].musicUnavailable; // informuje o braku obsługi audio.
+    return; // kończy odsłuch, jeśli przeglądarka nie obsługuje Web Audio.
+  } // kończy sprawdzanie obsługi Web Audio.
+  musicPreviewStatus.textContent = ""; // usuwa wcześniejszy komunikat o niedostępności.
+  stopMusicPreview(); // zatrzymuje poprzedni odsłuch przed uruchomieniem kolejnego.
+  if (!musicPreviewContext) { // tworzy kontekst dopiero po kliknięciu użytkownika.
+    musicPreviewContext = new window.AudioContext(); // przygotowuje odtwarzanie próbek bez zewnętrznych plików.
+  } // kończy inicjalizację audio dla próbek.
+  if (musicPreviewContext.state === "suspended") { // wznawia odtwarzanie po ograniczeniach przeglądarki.
+    musicPreviewContext.resume(); // uruchamia dźwięk w wyniku kliknięcia kafelka.
+  } // kończy wznawianie kontekstu audio.
+  playingMusicStyle = style; // oznacza kafelek, którego próbka właśnie gra.
+  musicPreviewStep = 0; // rozpoczyna odsłuch od początku wybranego motywu.
+  const playNextStep = function () { // odtwarza pojedynczy krok wspólnego motywu.
+    window.platformerMusic.playStep(musicPreviewContext, playingMusicStyle, musicPreviewStep); // korzysta z dokładnie tego samego brzmienia co gra.
+    musicPreviewStep++; // przechodzi do kolejnego kroku próbki.
+  }; // kończy definicję kroku próbki.
+  playNextStep(); // rozpoczyna próbkę od razu po wyborze.
+  musicPreviewInterval = window.setInterval(playNextStep, window.platformerMusic.tracks[style].stepMs); // kontynuuje próbkę zgodnie z tempem motywu.
+  musicPreviewTimeout = window.setTimeout(stopMusicPreview, 6000); // kończy próbkę automatycznie po sześciu sekundach.
+  refreshMusicPreviewButtons(); // oznacza odtwarzany kafelek.
+} // kończy wybór i odsłuch muzyki.
+
+musicPreviewButtons.forEach(function (button) { // podpina odsłuch do każdej dostępnej próbki.
+  button.addEventListener("click", function () { // odtwarza wybrany styl po kliknięciu.
+    previewMusicStyle(button.dataset.musicStyle); // zapisuje muzykę i odtwarza jej fragment.
+  }); // kończy obsługę kliknięcia próbki.
+}); // kończy przypinanie próbek.
+
 // Zapisuje wybrany kolor i natychmiast odświeża powiązane podglądy gry.
 playerColorSelect.addEventListener("change", function () { // reaguje na wybór nowego koloru bohatera.
   localStorage.setItem(playerColorKey, playerColorSelect.value); // zapisuje dozwolony kolor na potrzeby gry.
@@ -168,10 +266,11 @@ backgroundThemeSelect.addEventListener("change", function () { // reaguje na wyb
 }); // kończy obsługę zmiany motywu tła.
 
 updateAppearanceSettings(); // wczytuje zapisany wygląd lub ustawia wartości domyślne.
+refreshMusicPreviewButtons(); // pokazuje zapisany styl muzyki po wczytaniu strony.
 
 // Tworzy adres strony gry dla aktualnie wybranego poziomu.
-function getGameUrl() {
-  return "game.html?level=" + selectedLevel;
+function getGameUrl(isPreview) {
+  return "game.html?level=" + selectedLevel + (isPreview ? "&preview=1" : "");
 }
 
 // Odczytuje najwyższy odblokowany poziom i zabezpiecza wynik przed błędnymi danymi.
@@ -243,7 +342,7 @@ function updateLevelPath() {
         selectedLevel = level;
         updateSelectedLevel();
         if (previewIframe) {
-          previewIframe.src = getGameUrl();
+          previewIframe.src = getGameUrl(true);
         }
       });
 
@@ -325,6 +424,10 @@ window.addEventListener("storage", function (event) {
   if (event.key === unlockedLevelKey || (typeof event.key === "string" && (event.key.startsWith("levelStars_") || event.key.startsWith("levelCoins_") || event.key.startsWith("levelBestScore_") || event.key.startsWith("levelBestTime_")))) { // odświeża kartę po odblokowaniu albo zapisaniu statystyk poziomu.
     updateLevelPath();
   }
+  if (event.key === musicStyleKey) { // synchronizuje podświetlony styl z wyborem dokonanym w grze.
+    selectedMusicStyle = Object.prototype.hasOwnProperty.call(window.platformerMusic.tracks, event.newValue) ? event.newValue : "adventure"; // waliduje motyw przekazany z innej karty.
+    refreshMusicPreviewButtons(); // pokazuje nowy wybór na stronie głównej.
+  } // kończy synchronizację wybranego podkładu.
 });
 
 // Rysuje mapę przy pierwszym wczytaniu strony.
@@ -333,7 +436,7 @@ updateLevelPath();
 // Po kliknięciu uruchamia grę w ramce podglądu zamiast przechodzić na inną stronę.
 previewStart.addEventListener("click", function () {
   previewIframe = document.createElement("iframe");
-  previewIframe.src = getGameUrl();
+  previewIframe.src = getGameUrl(true);
   previewIframe.title = "Gra";
   previewFrame.appendChild(previewIframe);
   previewStart.remove();

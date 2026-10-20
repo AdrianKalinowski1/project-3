@@ -59,6 +59,32 @@
         </select> <!-- kończy listę wyboru motywu tła. -->
       </label> <!-- kończy pole wyboru motywu tła. -->
     </div> <!-- kończy układ opcji wyglądu gry. -->
+    <div class="music-preview" aria-labelledby="music-preview-title"> <!-- pozwala odsłuchać autorskie warianty muzyki przed wyborem podkładu. -->
+      <h3 id="music-preview-title" data-i18n="musicPreviewTitle">Wybierz muzykę i odsłuchaj próbkę</h3> <!-- wyjaśnia, że kafelki odtwarzają krótkie próbki. -->
+      <div class="music-preview-options" role="group" aria-labelledby="music-preview-title"> <!-- grupuje cztery próbki do porównania. -->
+        <button class="music-preview-option" type="button" data-music-style="adventure" aria-pressed="false"> <!-- wybiera i odtwarza przygodowy podkład. -->
+          <span class="music-preview-name" data-i18n="musicAdventure">Przygodowa</span> <!-- nazywa melodyczny podkład do parkuru. -->
+          <span class="music-preview-description" data-i18n="musicAdventureHint">Skoczna melodia, ciepłe akordy i lekki rytm.</span> <!-- opisuje charakter próbki przygodowej. -->
+          <span class="music-preview-action" data-i18n="musicListen">▶ Odsłuchaj</span> <!-- pokazuje, że kliknięcie odtwarza próbkę. -->
+        </button> <!-- kończy kafelek muzyki przygodowej. -->
+        <button class="music-preview-option" type="button" data-music-style="retro" aria-pressed="false"> <!-- wybiera i odtwarza retro chiptune. -->
+          <span class="music-preview-name" data-i18n="musicRetro">Retro chiptune</span> <!-- nazywa pikselowy wariant muzyki. -->
+          <span class="music-preview-description" data-i18n="musicRetroHint">Klasyczne brzmienie gier 8-bitowych.</span> <!-- opisuje charakter próbki retro. -->
+          <span class="music-preview-action" data-i18n="musicListen">▶ Odsłuchaj</span> <!-- pokazuje, że kliknięcie odtwarza próbkę. -->
+        </button> <!-- kończy kafelek muzyki retro. -->
+        <button class="music-preview-option" type="button" data-music-style="chill" aria-pressed="false"> <!-- wybiera i odtwarza spokojny wariant. -->
+          <span class="music-preview-name" data-i18n="musicChill">Spokojna eksploracja</span> <!-- nazywa łagodny podkład. -->
+          <span class="music-preview-description" data-i18n="musicChillHint">Wolniejsze tempo i miękkie dźwięki.</span> <!-- opisuje charakter spokojnej próbki. -->
+          <span class="music-preview-action" data-i18n="musicListen">▶ Odsłuchaj</span> <!-- pokazuje, że kliknięcie odtwarza próbkę. -->
+        </button> <!-- kończy kafelek spokojnej muzyki. -->
+        <button class="music-preview-option" type="button" data-music-style="arcade" aria-pressed="false"> <!-- wybiera i odtwarza szybki wariant arcade. -->
+          <span class="music-preview-name" data-i18n="musicArcade">Energetyczna arcade</span> <!-- nazywa najszybszy wariant muzyki. -->
+          <span class="music-preview-description" data-i18n="musicArcadeHint">Szybki rytm do dynamicznych poziomów.</span> <!-- opisuje charakter próbki arcade. -->
+          <span class="music-preview-action" data-i18n="musicListen">▶ Odsłuchaj</span> <!-- pokazuje, że kliknięcie odtwarza próbkę. -->
+        </button> <!-- kończy kafelek muzyki arcade. -->
+      </div> <!-- kończy zestaw próbek muzycznych. -->
+      <p id="music-preview-status" class="music-preview-status" aria-live="polite"></p> <!-- pokazuje informacje o obsłudze odsłuchu dla czytników ekranu. -->
+    </div> <!-- kończy panel odsłuchu muzyki. -->
   </section> <!-- kończy ustawienia wyglądu gry na stronie głównej. -->
 
   <!-- Karty przedstawiające najważniejsze elementy gry. -->
@@ -110,6 +136,7 @@
   </footer>
 
   <!-- Obsługa tłumaczeń, mapy poziomów i podglądu gry. -->
+  <script src="music.js"></script> <!-- udostępnia wspólne motywy do próbek i właściwej gry. -->
   <script src="landing.js"></script>
 </body>
 </html>
