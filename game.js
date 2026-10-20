@@ -529,7 +529,7 @@ function nextLevel() {
   const levelScore = score - levelStartingScore; // oblicza punkty zdobyte od rozpoczęcia właśnie ukończonego poziomu.
   const elapsedSeconds = (performance.now() - levelStartedAt) / 1000; // oblicza czas przejścia poziomu w sekundach.
   const coinStar = coins.every(function (coin) { return coin.collected; }) ? 1 : 0; // przyznaje gwiazdkę za zebranie wszystkich monet.
-  const speedStars = elapsedSeconds <= 45 ? 2 : elapsedSeconds <= 90 ? 1 : 0; // przyznaje dodatkowe gwiazdki za szybkie ukończenie.
+  const speedStars = elapsedSeconds <= 15 ? 2 : elapsedSeconds <= 40 ? 1 : 0; // przyznaje dodatkowe gwiazdki za szybkie ukończenie.
   const earnedStars = Math.min(3, coinStar + speedStars); // ogranicza ocenę do maksymalnie trzech gwiazdek.
   completedLevelTime = elapsedSeconds; // zachowuje czas do podsumowania ukończonego poziomu.
   completedLevelStars = earnedStars; // zachowuje gwiazdki zdobyte w tej próbie.

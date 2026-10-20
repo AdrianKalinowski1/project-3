@@ -17,7 +17,7 @@ const translations = {
     themeNight: "Noc", // polska nazwa nocnego motywu z gwiazdami.
     themeForest: "Las", // polska nazwa zielonego motywu.
     levelMapTitle: "Droga przez poziomy",
-    levelMapHint: "Ukończ poziom, by odblokować następny. 1★ za wszystkie monety, 2★ poniżej 90 s, 3★ poniżej 45 s.",
+    levelMapHint: "Ukończ poziom, by odblokować następny. 1★ za wszystkie monety, 2★ poniżej 40 s, 3★ poniżej 15 s.",
     levelLabel: "Poziom ",
     levelLocked: "Zablokowany",
     levelUnlocked: "Odblokowany",
@@ -65,7 +65,7 @@ const translations = {
     themeNight: "Night", // English name for the starry night theme.
     themeForest: "Forest", // English name for the green theme.
     levelMapTitle: "Level path",
-    levelMapHint: "Finish a level to unlock the next. 1★ for all coins, 2★ under 90 sec, 3★ under 45 sec.",
+    levelMapHint: "Finish a level to unlock the next. 1★ for all coins, 2★ under 40 sec, 3★ under 15 sec.",
     levelLabel: "Level ",
     levelLocked: "Locked",
     levelUnlocked: "Unlocked",
