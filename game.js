@@ -608,9 +608,8 @@ function restartGame() {
   gameOver = false;      // zdejmujemy ekran przegranej
   gameWon = false;       // i ekran wygranej
   levelComplete = false; // usuwa ekran podsumowania przed ponowną próbą.
-  victoryScreen.hidden = true; // ukrywa podsumowanie, jeśli restart nastąpił z poziomu ekranu wygranej.
-  currentLevel = startingLevel;
-  loadLevel(startingLevel);
+  victoryScreen.hidden = true; // ukrywa podsumowanie przed ponowną próbą na bieżącym poziomie.
+  loadLevel(currentLevel); // po śmierci uruchamia ponownie poziom, na którym gracz właśnie grał.
 }
 
 // Uruchamia pełną rozgrywkę od pierwszego poziomu bez kasowania zapisanego postępu.
