@@ -138,6 +138,7 @@ let currentLevel = 0;  // numer poziomu (0 = pierwszy)
 // Zapamiętany poziom startowy, do którego wraca klawisz R po końcu gry.
 let startingLevel = 0;
 let levelStartingScore = 0; // wynik na początku poziomu pozwala policzyć punkty zdobyte tylko na nim.
+let levelStartedAt = performance.now(); // mierzy czas poziomu, aby przyznać dodatkowe gwiazdki za szybkość.
 let gameOver = false;  // czy gracz przegrał
 let gameWon = false;   // czy gracz wygrał całą grę
 let checkpoint = null; // aktywny punkt kontrolny bieżącego poziomu albo null, gdy go nie ma.
@@ -489,12 +490,21 @@ function loadLevel(index) {
   player.velocityY = 0;
   player.standingOn = null;      // na starcie nie stoi na żadnej platformie
   levelStartingScore = score;    // zapisujemy wynik wejściowy, aby później wyliczyć rekord tego poziomu.
+  levelStartedAt = performance.now(); // rozpoczyna pomiar czasu bieżącego poziomu.
 }
 
 // Przechodzi do następnego poziomu (albo kończy grę wygraną, jeśli to był ostatni)
 function nextLevel() {
   const completedLevel = currentLevel + 1; // zamienia indeks zaczynający się od zera na numer poziomu dla pamięci.
   const levelScore = score - levelStartingScore; // oblicza punkty zdobyte od rozpoczęcia właśnie ukończonego poziomu.
+  const elapsedSeconds = (performance.now() - levelStartedAt) / 1000; // oblicza czas przejścia poziomu w sekundach.
+  const coinStar = coins.every(function (coin) { return coin.collected; }) ? 1 : 0; // przyznaje gwiazdkę za zebranie wszystkich monet.
+  const speedStars = elapsedSeconds <= 45 ? 2 : elapsedSeconds <= 90 ? 1 : 0; // przyznaje dodatkowe gwiazdki za szybkie ukończenie.
+  const earnedStars = Math.min(3, coinStar + speedStars); // ogranicza ocenę do maksymalnie trzech gwiazdek.
+  const levelStarsKey = "levelStars_" + completedLevel; // tworzy osobny klucz pamięci dla gwiazdek poziomu.
+  const previousStars = Number(localStorage.getItem(levelStarsKey)); // odczytuje poprzednio zdobyte gwiazdki.
+  const bestStars = Number.isInteger(previousStars) && previousStars >= 0 && previousStars <= 3 ? Math.max(previousStars, earnedStars) : earnedStars; // zachowuje najlepszą ocenę bez jej obniżania.
+  localStorage.setItem(levelStarsKey, String(bestStars)); // zapisuje najlepszą ocenę poziomu w przeglądarce.
   const levelBestScoreKey = "levelBestScore_" + completedLevel; // tworzy osobny klucz localStorage dla rekordu poziomu.
   const savedLevelBestScore = localStorage.getItem(levelBestScoreKey); // odczytuje poprzedni zapis rekordu, aby wykryć jego brak.
   const previousLevelBestScore = Number(savedLevelBestScore); // zamienia zapis tekstowy na liczbę do porównania.

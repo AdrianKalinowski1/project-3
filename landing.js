@@ -17,7 +17,7 @@ const translations = {
     themeNight: "Noc", // polska nazwa nocnego motywu z gwiazdami.
     themeForest: "Las", // polska nazwa zielonego motywu.
     levelMapTitle: "Droga przez poziomy",
-    levelMapHint: "Przejdź poziom, aby odblokować następny.",
+    levelMapHint: "Ukończ poziom, by odblokować następny. 1★ za wszystkie monety, 2★ poniżej 90 s, 3★ poniżej 45 s.",
     levelLabel: "Poziom ",
     levelLocked: "Zablokowany",
     levelUnlocked: "Odblokowany",
@@ -27,6 +27,8 @@ const translations = {
     levelCoins: "Monety: ", // początek opisu zebranych monet w języku polskim.
     levelBestScore: "Rekord: ", // początek opisu najlepszego wyniku poziomu po polsku.
     levelPointsUnit: " pkt", // skrót jednostki punktów po polsku.
+    levelStars: "Gwiazdki: ", // podpis liczby gwiazdek zdobytych za poziom.
+    noLevelStars: "brak oceny", // informuje o ukończeniu sprzed wprowadzenia systemu gwiazdek.
     playButton: "Zagraj teraz",
     featuresTitle: "Dlaczego warto zagrać?",
     card1Title: "Zbieraj monety",
@@ -62,7 +64,7 @@ const translations = {
     themeNight: "Night", // English name for the starry night theme.
     themeForest: "Forest", // English name for the green theme.
     levelMapTitle: "Level path",
-    levelMapHint: "Complete a level to unlock the next one.",
+    levelMapHint: "Finish a level to unlock the next. 1★ for all coins, 2★ under 90 sec, 3★ under 45 sec.",
     levelLabel: "Level ",
     levelLocked: "Locked",
     levelUnlocked: "Unlocked",
@@ -72,6 +74,8 @@ const translations = {
     levelCoins: "Coins: ", // angielski początek opisu liczby zebranych monet.
     levelBestScore: "Best: ", // angielski początek opisu najlepszego wyniku poziomu.
     levelPointsUnit: " pts", // angielski skrót jednostki punktów.
+    levelStars: "Stars: ", // label for the number of stars earned on a level.
+    noLevelStars: "not rated", // describes levels completed before star ratings were added.
     playButton: "Play now",
     featuresTitle: "Why play?",
     card1Title: "Collect coins",
@@ -193,7 +197,13 @@ function updateLevelPath() {
     // Poziomy niższe od limitu są ukończone; limit sam jest odblokowany.
     const isUnlocked = level <= unlockedLevel;
     const isSelected = level === selectedLevel;
-    const isCompleted = level < unlockedLevel;
+    const savedCoins = Number(localStorage.getItem("levelCoins_" + level)); // odczytuje liczbę monet zachowaną po ukończeniu poziomu.
+    const savedBestScore = Number(localStorage.getItem("levelBestScore_" + level)); // odczytuje najlepszy wynik punktowy poziomu.
+    const hasSavedStats = Number.isInteger(savedCoins) && savedCoins > 0 && Number.isFinite(savedBestScore); // rozpoznaje istniejący zapis ukończonego poziomu.
+    const savedStarsText = localStorage.getItem("levelStars_" + level); // odczytuje zapis gwiazdek, aby odróżnić go od jego braku.
+    const savedStars = Number(savedStarsText); // zamienia zapis tekstowy na liczbę gwiazdek.
+    const hasStarRating = ["0", "1", "2", "3"].includes(savedStarsText); // akceptuje tylko zapis liczby gwiazdek z zakresu 0–3.
+    const isCompleted = level < unlockedLevel || hasSavedStats || hasStarRating; // uwzględnia także ukończenie ostatniego poziomu.
     let card = cardsAlreadyCreated
       ? levelPath.querySelector('[data-level="' + level + '"]')
       : null;
@@ -245,9 +255,6 @@ function updateLevelPath() {
     thumbnail.title = translations[currentLanguage].levelPreview + level;
     const status = card.querySelector(".level-status");
     const button = card.querySelector(".level-node");
-    const savedCoins = Number(localStorage.getItem("levelCoins_" + level)); // odczytuje monety zapisane przy ukończeniu tego poziomu.
-    const savedBestScore = Number(localStorage.getItem("levelBestScore_" + level)); // odczytuje najlepszy wynik zapisany dla tego poziomu.
-    const hasSavedStats = Number.isInteger(savedCoins) && savedCoins > 0 && Number.isFinite(savedBestScore); // odróżnia nowe statystyki od starych zapisów postępu.
     // Zablokowany poziom nie może być wybrany, także klawiaturą.
     button.disabled = !isUnlocked;
     button.setAttribute("aria-pressed", String(isSelected));
@@ -271,8 +278,9 @@ function updateLevelPath() {
     const label = translations[currentLanguage].levelLabel.trim() + " " + level; // tworzy nazwę poziomu w aktualnym języku.
     status.textContent = isCompleted ? "✓" : isUnlocked ? "" : "🔒"; // zachowuje ikonę ukończenia albo kłódki na miniaturze.
     button.querySelector(".level-name").textContent = label; // wpisuje nazwę poziomu do pierwszego wiersza kafelka.
+    const starsText = hasStarRating ? "★".repeat(savedStars) + "☆".repeat(3 - savedStars) : translations[currentLanguage].noLevelStars; // tworzy ocenę gwiazdkową albo informację o starszym zapisie.
     const levelDetailsText = isCompleted && hasSavedStats // statystyki pokazujemy tylko dla ukończonego poziomu z zapisanymi danymi.
-      ? translations[currentLanguage].levelCoins + savedCoins + "/" + savedCoins + "\n" + translations[currentLanguage].levelBestScore + savedBestScore + translations[currentLanguage].levelPointsUnit // umieszcza monety i rekord w osobnych, czytelnych wierszach.
+      ? translations[currentLanguage].levelCoins + savedCoins + "/" + savedCoins + "\n" + translations[currentLanguage].levelBestScore + savedBestScore + translations[currentLanguage].levelPointsUnit + "\n" + translations[currentLanguage].levelStars + starsText // pokazuje monety, rekord i gwiazdki w osobnych wierszach.
       : isCompleted ? translations[currentLanguage].levelCompleted : ""; // dla starych zapisów wyświetla samo ukończenie, a w innych przypadkach pusty tekst.
     button.querySelector(".level-details").textContent = levelDetailsText; // pokazuje szczegóły pod nazwą poziomu.
     button.setAttribute("aria-label", button.getAttribute("aria-label") + (isCompleted && hasSavedStats ? ", " + levelDetailsText : "")); // udostępnia zapisane wyniki czytnikom ekranu.
@@ -294,9 +302,9 @@ function updateSelectedLevel() {
   playButton.href = getGameUrl();
 }
 
-// Synchronizuje mapę, gdy postęp zmieni się w innej karcie lub ramce.
+// Synchronizuje mapę, gdy postęp lub wynik zmieni się w innej karcie albo ramce.
 window.addEventListener("storage", function (event) {
-  if (event.key === unlockedLevelKey) {
+  if (event.key === unlockedLevelKey || (typeof event.key === "string" && (event.key.startsWith("levelStars_") || event.key.startsWith("levelCoins_") || event.key.startsWith("levelBestScore_")))) { // odświeża kartę po odblokowaniu albo zapisaniu statystyk poziomu.
     updateLevelPath();
   }
 });
