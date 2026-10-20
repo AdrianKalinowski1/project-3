@@ -15,6 +15,7 @@ const crumbleDelay = 60;
 const respawnDelay = 180;
 // Przycisk zmiany języka z pliku game.html
 const langButton = document.getElementById("lang-button");
+const audioButton = document.getElementById("audio-button"); // pobiera przycisk włączania i wyciszania gry.
 // Link powrotu do menu; jego tekst zmienia się razem z językiem gry.
 const menuButton = document.getElementById("menu-button");
 const victoryScreen = document.getElementById("victory-screen"); // pobiera ukryte podsumowanie końcowe z dokumentu gry.
@@ -38,6 +39,8 @@ const translations = {
     timer: "Czas: ", // podpis licznika czasu aktualnego poziomu.
     controls: "A/D lub strzałki: ruch, spacja: skok",
     mainMenu: "Menu główne",
+    soundOn: "Wycisz dźwięk", // opisuje przycisk, gdy muzyka i efekty są włączone.
+    soundOff: "Włącz dźwięk", // opisuje przycisk, gdy muzyka i efekty są wyciszone.
     touchControls: "Sterowanie dotykowe", // etykieta grupy przycisków dotykowych po polsku.
     moveLeft: "Ruch w lewo", // opis dostępności przycisku ruchu w lewo po polsku.
     moveRight: "Ruch w prawo", // opis dostępności przycisku ruchu w prawo po polsku.
@@ -69,6 +72,8 @@ const translations = {
     timer: "Time: ", // label for the current level timer.
     controls: "A/D or arrows: move, space: jump",
     mainMenu: "Main menu",
+    soundOn: "Mute sound", // labels the button while music and effects are enabled.
+    soundOff: "Turn sound on", // labels the button while music and effects are muted.
     touchControls: "Touch controls", // label for the touch-control group in English.
     moveLeft: "Move left", // accessible label for the left movement button.
     moveRight: "Move right", // accessible label for the right movement button.
@@ -110,6 +115,7 @@ function setLanguage(language) {
   document.documentElement.lang = language;            // ustawiamy język strony w znaczniku <html>
   langButton.textContent = language === "pl" ? "EN" : "PL"; // przycisk pokazuje język, na który się przełączy
   menuButton.textContent = t("mainMenu");
+  updateAudioButton(); // ustawia opis dostępności przycisku dźwięku w wybranym języku.
   document.querySelector(".touch-controls").setAttribute("aria-label", t("touchControls")); // tłumaczy opis grupy przycisków dotykowych.
   document.getElementById("touch-left").setAttribute("aria-label", t("moveLeft")); // tłumaczy opis przycisku ruchu w lewo.
   document.getElementById("touch-right").setAttribute("aria-label", t("moveRight")); // tłumaczy opis przycisku ruchu w prawo.
@@ -174,6 +180,122 @@ let gameWon = false;   // czy gracz wygrał całą grę
 let checkpoint = null; // aktywny punkt kontrolny bieżącego poziomu albo null, gdy go nie ma.
 let checkpointNoticeTimer = 0; // liczba klatek, przez które pokazujemy komunikat o punkcie kontrolnym.
 let checkpointNoticeText = ""; // tekst ostatniego komunikatu o punkcie kontrolnym.
+const audioStorageKey = "gameAudioEnabled"; // klucz pamięci wyboru muzyki i efektów dźwiękowych.
+let audioEnabled = localStorage.getItem(audioStorageKey) !== "false"; // włącza dźwięk domyślnie i pamięta wyciszenie.
+let audioContext = null; // przechowuje kontekst dźwięku tworzony po pierwszej interakcji.
+let musicInterval = null; // przechowuje zegar odtwarzający kolejne nuty muzyki.
+let musicStep = 0; // wskazuje kolejną nutę w krótkiej pętli retro.
+
+// Odświeża ikonę oraz etykietę dostępności przycisku audio.
+function updateAudioButton() { // pokazuje, czy muzyka i efekty są aktualnie włączone.
+  audioButton.textContent = audioEnabled ? "🔊" : "🔇"; // wyświetla ikonę głośnika albo wyciszenia.
+  audioButton.setAttribute("aria-label", t(audioEnabled ? "soundOn" : "soundOff")); // opisuje działanie przycisku w czytniku ekranu.
+  audioButton.setAttribute("aria-pressed", String(audioEnabled)); // przekazuje stan przełącznika technologiom asystującym.
+} // kończy odświeżanie przycisku audio.
+
+// Tworzy kontekst audio dopiero po działaniu użytkownika dozwolonym przez przeglądarkę.
+function getAudioContext() { // zwraca aktywny kontekst lub brak, gdy dźwięk jest wyciszony.
+  if (!audioEnabled || isLevelThumbnail) { // nie odtwarza dźwięku w miniaturach ani po wyciszeniu.
+    return null; // informuje wywołującego, że dźwięk nie może teraz zabrzmieć.
+  } // kończy sprawdzanie dostępności dźwięku.
+  if (!window.AudioContext) { // sprawdza obsługę syntezy dźwięku przez przeglądarkę.
+    audioButton.disabled = true; // wyłącza przełącznik, jeśli urządzenie nie ma Web Audio.
+    return null; // pozwala grze działać bez dźwięku na nieobsługiwanym urządzeniu.
+  } // kończy kontrolę obsługi audio.
+  if (!audioContext) { // tworzy audio dopiero przy pierwszym kliknięciu lub naciśnięciu klawisza.
+    audioContext = new window.AudioContext(); // przygotowuje syntezę dźwięków bez zewnętrznych plików.
+  } // kończy inicjalizację kontekstu audio.
+  if (audioContext.state === "suspended") { // wznawia dźwięk po blokadzie automatycznego odtwarzania.
+    audioContext.resume(); // uruchamia kontekst po interakcji użytkownika.
+  } // kończy wznawianie kontekstu.
+  return audioContext; // udostępnia gotowy kontekst efektom i muzyce.
+} // kończy pobieranie kontekstu audio.
+
+// Odtwarza pojedynczą nutę z krótkim, płynnym wyciszeniem.
+function playTone(frequency, duration, waveform, volume, delay) { // tworzy dźwięk o podanej wysokości i długości.
+  const context = getAudioContext(); // pobiera audio tylko wtedy, gdy użytkownik włączył dźwięk.
+  if (!context) { // pomija nutę, jeśli audio jest wyłączone lub niedostępne.
+    return; // nie zakłóca działania logiki gry bez dźwięku.
+  } // kończy sprawdzanie gotowości dźwięku.
+  const oscillator = context.createOscillator(); // generuje prosty ton bez pobierania plików.
+  const gain = context.createGain(); // reguluje głośność nuty i jej wyciszenie.
+  const startsAt = context.currentTime + (delay || 0); // pozwala zaplanować nuty jedna po drugiej.
+  oscillator.type = waveform; // wybiera charakter brzmienia instrumentu.
+  oscillator.frequency.setValueAtTime(frequency, startsAt); // ustawia wysokość dźwięku.
+  gain.gain.setValueAtTime(0.0001, startsAt); // zaczyna prawie bezgłośnie, by uniknąć trzasku.
+  gain.gain.exponentialRampToValueAtTime(volume, startsAt + 0.02); // szybko i łagodnie podnosi głośność.
+  gain.gain.exponentialRampToValueAtTime(0.0001, startsAt + duration); // wycisza ton przed jego zakończeniem.
+  oscillator.connect(gain); // kieruje dźwięk generatora przez regulator głośności.
+  gain.connect(context.destination); // odtwarza wyciszony dźwięk w głośnikach.
+  oscillator.start(startsAt); // rozpoczyna zaplanowaną nutę.
+  oscillator.stop(startsAt + duration + 0.03); // zatrzymuje generator po wyciszeniu.
+} // kończy syntezę pojedynczej nuty.
+
+// Odtwarza muzykę w stylu retro jako zapętloną melodię z basem.
+function playMusicStep() { // gra kolejną nutę melodii i co kilka kroków dodaje bas.
+  const melody = [523, 659, 784, 659, 587, 698, 880, 698, 523, 659, 784, 1047, 880, 784, 659, 587]; // układa lekką, oryginalną melodię ośmiobitową.
+  const note = melody[musicStep % melody.length]; // wybiera nutę i wraca na początek po końcu melodii.
+  playTone(note, 0.19, "square", 0.018, 0); // odtwarza cichą, krótką nutę melodii.
+  if (musicStep % 4 === 0) { // dodaje bas tylko raz na cztery nuty.
+    playTone(note / 2, 0.34, "triangle", 0.025, 0); // wspiera melodię miękką niską nutą.
+  } // kończy warunek dodawania basu.
+  musicStep++; // przechodzi do następnej nuty w pętli.
+} // kończy odtwarzanie jednego kroku muzyki.
+
+// Uruchamia muzykę po pierwszej czynności gracza, zgodnie z ograniczeniami przeglądarki.
+function startAudio() { // przygotowuje tło muzyczne tylko raz na kartę gry.
+  if (!audioEnabled || isLevelThumbnail || musicInterval !== null) { // unika dźwięku po wyciszeniu, w miniaturach i podwójnej pętli.
+    return; // pozostawia już działający odtwarzacz bez zmian.
+  } // kończy kontrolę warunków uruchomienia muzyki.
+  if (!getAudioContext()) { // sprawdza dostępność dźwięku i uruchamia kontekst.
+    return; // zatrzymuje start, gdy przeglądarka nie obsługuje Web Audio.
+  } // kończy sprawdzanie kontekstu audio.
+  playMusicStep(); // odtwarza pierwszą nutę od razu po interakcji gracza.
+  musicInterval = window.setInterval(playMusicStep, 240); // kontynuuje spokojną melodię w krótkiej pętli.
+} // kończy uruchamianie muzyki.
+
+// Kończy odtwarzanie melodii, gdy użytkownik wyciszy grę.
+function stopAudio() { // zatrzymuje zaplanowane kolejne nuty.
+  if (musicInterval !== null) { // czyści wyłącznie istniejącą pętlę muzyczną.
+    window.clearInterval(musicInterval); // zatrzymuje zegar kolejnych nut.
+    musicInterval = null; // pozwala ponownie uruchomić muzykę po włączeniu.
+  } // kończy zatrzymywanie pętli.
+} // kończy wyciszanie muzyki.
+
+// Odtwarza krótki efekt przypisany do wydarzenia w grze.
+function playSoundEffect(effect) { // wybiera oryginalne tony dla skoku, monety i ważnych zdarzeń.
+  if (effect === "jump") { // rozpoznaje dźwięk wybicia się postaci.
+    playTone(420, 0.11, "triangle", 0.045, 0); // daje krótki, lekki ton skoku.
+  } else if (effect === "coin") { // rozpoznaje zebranie monety.
+    playTone(880, 0.1, "sine", 0.055, 0); // odtwarza jasny pierwszy ton monety.
+    playTone(1175, 0.14, "sine", 0.045, 0.07); // dodaje drugi, wyższy ton nagrody.
+  } else if (effect === "checkpoint") { // rozpoznaje aktywowanie punktu kontrolnego.
+    playTone(660, 0.12, "triangle", 0.045, 0); // potwierdza checkpoint pierwszą nutą.
+    playTone(880, 0.18, "triangle", 0.045, 0.12); // kończy potwierdzenie wyższym tonem.
+  } else if (effect === "enemy") { // rozpoznaje pokonanie przeciwnika.
+    playTone(330, 0.1, "square", 0.035, 0); // daje krótkie dźwiękowe potwierdzenie trafienia.
+  } else if (effect === "death") { // rozpoznaje zderzenie kończące próbę.
+    playTone(260, 0.24, "sawtooth", 0.035, 0); // odtwarza krótki, opadający ton porażki.
+  } else if (effect === "complete") { // rozpoznaje ukończenie poziomu.
+    playTone(523, 0.16, "triangle", 0.05, 0); // rozpoczyna krótką fanfarę ukończenia.
+    playTone(659, 0.16, "triangle", 0.05, 0.14); // rozwija fanfarę na wyższy ton.
+    playTone(784, 0.28, "triangle", 0.055, 0.28); // kończy fanfarę jasną nutą.
+  } // kończy dobór dźwięku do wydarzenia.
+} // kończy odtwarzanie efektu gry.
+
+// Zachowuje wybór gracza i natychmiast uruchamia albo wycisza dźwięk.
+audioButton.addEventListener("click", function () { // przełącza muzykę i efekty jednym przyciskiem.
+  audioEnabled = !audioEnabled; // zmienia bieżący stan dźwięku.
+  localStorage.setItem(audioStorageKey, String(audioEnabled)); // zapamiętuje wybór także po ponownym uruchomieniu gry.
+  updateAudioButton(); // odświeża ikonę i opis przycisku.
+  if (audioEnabled) { // włącza muzykę po kliknięciu użytkownika.
+    startAudio(); // rozpoczyna melodię zgodnie z polityką przeglądarki.
+  } else { // wycisza dźwięk po wybraniu ikony głośnika.
+    stopAudio(); // zatrzymuje kolejne nuty muzyki.
+  } // kończy przełączanie dźwięku.
+}); // kończy obsługę przełącznika audio.
+
+updateAudioButton(); // pokazuje prawidłowy stan audio po wczytaniu zapisanych ustawień.
 
 // Współrzędne chmur na niebie (tylko ozdoba)
 const clouds = [
@@ -396,6 +518,7 @@ const keys = {};
 
 // Gdy naciśniesz klawisz: zapisujemy, że jest wciśnięty
 document.addEventListener("keydown", function (event) {
+  startAudio(); // odblokowuje muzykę po pierwszym naciśnięciu klawisza w grze.
   keys[event.code] = true;
   // Spacja i strzałki normalnie przewijają stronę, więc to blokujemy
   if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.code)) {
@@ -413,6 +536,7 @@ function bindTouchButton(buttonId, keyCode) { // podpina dotykowy przycisk do is
   const button = document.getElementById(buttonId); // pobiera przycisk z dokumentu HTML.
   button.addEventListener("pointerdown", function (event) { // rozpoczyna ruch lub skok po dotknięciu przycisku.
     event.preventDefault(); // zapobiega zaznaczaniu strony i gestom przeglądarki podczas gry.
+    startAudio(); // uruchamia muzykę po pierwszym dotknięciu sterowania.
     keys[keyCode] = true; // zgłasza wciśnięty klawisz do logiki gry.
     button.setPointerCapture(event.pointerId); // utrzymuje śledzenie dotyku, nawet gdy palec zsunie się z przycisku.
   }); // kończy obsługę naciśnięcia przycisku dotykowego.
@@ -432,9 +556,17 @@ window.addEventListener("blur", function () { // czyści sterowanie, gdy użytko
   for (const keyCode of Object.keys(keys)) { // przechodzi po wszystkich zapamiętanych klawiszach.
     keys[keyCode] = false; // zwalnia klawisze, by ruch nie pozostał zablokowany po powrocie.
   } // kończy zwalnianie zapamiętanych klawiszy.
+  stopAudio(); // zatrzymuje muzykę w tle, gdy karta gry traci aktywność.
 }); // kończy obsługę utraty fokusu okna gry.
 
 window.addEventListener("storage", function (event) { // aktualizuje wygląd gry, gdy ustawienie zmieni się w innym oknie.
+  if (event.key === audioStorageKey) { // synchronizuje stan wyciszenia, gdy zmieni się on w innej karcie.
+    audioEnabled = event.newValue !== "false"; // przyjmuje zapisany stan dźwięku.
+    updateAudioButton(); // odświeża ikonę po zmianie ustawień poza tą kartą.
+    if (!audioEnabled) { // zatrzymuje muzykę po wyciszeniu w innej karcie.
+      stopAudio(); // wycisza kolejne nuty.
+    } // muzyka ruszy po interakcji w tej karcie, gdy włączono ją z innego okna.
+  } // kończy obsługę zmiany ustawień dźwięku.
   if (event.key === "playerColor") { // reaguje wyłącznie na zmianę koloru postaci.
     player.color = Object.prototype.hasOwnProperty.call(playerColors, event.newValue) ? playerColors[event.newValue] : "#e94b4b"; // przyjmuje tylko dozwolony kolor albo wraca do czerwieni.
   } // kończy aktualizowanie koloru postaci.
@@ -703,6 +835,7 @@ function movePlayerVertically() {
   // skok: tylko gdy naciśnięta spacja albo strzałka w górę ORAZ postać stoi na podłożu
   if ((keys["Space"] || keys["ArrowUp"]) && player.onGround) {
     player.velocityY = player.jumpPower;       // nadajemy prędkość w górę
+    playSoundEffect("jump"); // odtwarza efekt dźwiękowy przy każdym prawidłowym skoku.
   }
 
   // grawitacja
@@ -813,6 +946,7 @@ function collectCoins() {
     if (!coin.collected && isOverlapping(player, coin)) {
       coin.collected = true;    // oznaczamy jako zebraną (przestaje się rysować i liczyć)
       score++;                  // +1 punkt
+      playSoundEffect("coin"); // odtwarza dźwięk zebranej monety.
     }
   }
 }
@@ -821,7 +955,10 @@ function collectCoins() {
 function checkSpikes() {
   for (const spike of spikes) {
     if (isOverlapping(player, spike)) {
-      gameOver = true;
+      if (!gameOver) { // odtwarza dźwięk tylko przy pierwszym zderzeniu w tej klatce.
+        gameOver = true; // zatrzymuje grę po trafieniu w kolce.
+        playSoundEffect("death"); // informuje dźwiękiem o śmierci postaci.
+      } // kończy obsługę śmierci od kolców.
     }
   }
 }
@@ -838,9 +975,13 @@ function checkEnemies() {
         enemy.alive = false;
         player.velocityY = -8;      // odbicie w górę
         score += 2;                 // 2 punkty za wroga
+        playSoundEffect("enemy"); // odtwarza krótki efekt po pokonaniu przeciwnika.
       } else {
         // dotknięcie z boku -> koniec gry
-        gameOver = true;
+        if (!gameOver) { // zapobiega wielokrotnemu odtwarzaniu dźwięku śmierci.
+          gameOver = true; // zatrzymuje grę po kontakcie z wrogiem z boku.
+          playSoundEffect("death"); // informuje dźwiękiem o przegranej.
+        } // kończy obsługę śmierci od przeciwnika.
       }
     }
   }
@@ -850,6 +991,7 @@ function checkEnemies() {
 function checkLevelComplete() {
   // "every" sprawdza, czy KAŻDA moneta jest zebrana; warunek !gameOver = nie przechodzimy dalej, gdy właśnie zginąłeś
   if (!gameOver && coins.every(function (coin) { return coin.collected; })) {
+    playSoundEffect("complete"); // odtwarza fanfarę za ukończenie poziomu.
     nextLevel();
   }
 }
@@ -862,6 +1004,7 @@ function checkCheckpoint() { // wykrywa dotknięcie flagi i aktywuje punkt kontr
       checkpoint.activated = true; // oznacza punkt kontrolny jako aktywny.
       checkpointNoticeText = t("checkpointReached"); // ustawia komunikat w aktualnym języku.
       checkpointNoticeTimer = 120; // wyświetla potwierdzenie przez około dwie sekundy.
+      playSoundEffect("checkpoint"); // odtwarza dźwięk aktywowania flagi.
     } // kończy sprawdzanie kontaktu z flagą.
   } // kończy sprawdzanie dostępności punktu kontrolnego.
 } // kończy obsługę aktywowania flagi.

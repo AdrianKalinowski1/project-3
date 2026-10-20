@@ -41,6 +41,7 @@ body.level-thumbnail canvas {
 
 /* Ukrywa elementy sterujące w miniaturach, aby nie zasłaniały planszy. */
 body.level-thumbnail .menu-button,
+body.level-thumbnail .audio-button, /* ukrywa przełącznik dźwięku w małych podglądach poziomów. */
 body.level-thumbnail .lang-button {
   display: none;
 }
@@ -49,7 +50,7 @@ body.level-thumbnail .lang-button {
 .menu-button {
   position: fixed;
   top: 16px;
-  right: 76px;
+  right: 226px;
   z-index: 10;
   padding: 8px 16px;
   color: white;
@@ -58,6 +59,28 @@ body.level-thumbnail .lang-button {
   background: rgba(0, 0, 0, 0.5);
   border: 2px solid white;
   border-radius: 20px;
+}
+
+/* Przycisk dźwięku jest widoczny obok menu i przełącznika języka. */
+.audio-button {
+  position: fixed; /* utrzymuje przełącznik w górnym pasku gry. */
+  top: 16px; /* wyrównuje przełącznik z menu i językiem. */
+  right: 142px; /* rezerwuje osobne miejsce pomiędzy menu i językiem. */
+  z-index: 10; /* umieszcza przycisk nad planszą. */
+  min-width: 64px; /* daje ikonę o wygodnym rozmiarze klikalnym. */
+  padding: 8px 14px; /* oddziela ikonę od obramowania. */
+  color: white; /* zapewnia kontrast ikony na ciemnym tle. */
+  font-size: 1rem; /* dopasowuje symbol do pozostałych przycisków. */
+  font-weight: bold; /* wzmacnia widoczność ikony. */
+  background: rgba(0, 0, 0, 0.5); /* odcina przełącznik od tła gry. */
+  border: 2px solid white; /* wyraźnie wyznacza obszar przycisku. */
+  border-radius: 20px; /* dopasowuje kształt do pozostałych przycisków. */
+  cursor: pointer; /* wskazuje, że przycisk jest aktywny. */
+}
+
+/* Przy najechaniu przycisk dźwięku staje się wyraźniejszy. */
+.audio-button:hover {
+  background: rgba(0, 0, 0, 0.75); /* wyróżnia przycisk po najechaniu kursorem. */
 }
 
 /* Przy najechaniu menu staje się wyraźniejsze. */
@@ -248,10 +271,18 @@ body.level-thumbnail .lang-button {
 
   .menu-button { /* zmniejsza górny przycisk menu na wąskim ekranie. */
     top: max(10px, env(safe-area-inset-top)); /* omija wcięcie i pasek stanu telefonu. */
-    right: 68px; /* zostawia wolne miejsce na przycisk języka. */
+    right: auto; /* nie nakłada menu na nowe przyciski w prawym górnym rogu. */
+    left: 10px; /* umieszcza menu po przeciwnej stronie ekranu telefonu. */
     padding: 7px 10px; /* zmniejsza zajmowaną szerokość. */
     font-size: 0.9rem; /* dopasowuje tekst menu do małego ekranu. */
   } /* kończy mobilny wygląd przycisku menu. */
+
+  .audio-button { /* ustawia przełącznik dźwięku między menu a językiem na telefonie. */
+    top: max(10px, env(safe-area-inset-top)); /* omija wcięcie i pasek stanu telefonu. */
+    right: 68px; /* zostawia wolne miejsce na przycisk języka. */
+    min-width: 48px; /* utrzymuje wygodny obszar dotyku. */
+    padding: 7px 10px; /* dopasowuje szerokość przycisku do małego ekranu. */
+  } /* kończy mobilne ustawienie przycisku dźwięku. */
 
   .lang-button { /* dopasowuje przycisk języka do górnej krawędzi telefonu. */
     top: max(10px, env(safe-area-inset-top)); /* omija wcięcie i pasek stanu telefonu. */
