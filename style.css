@@ -150,6 +150,23 @@ body.level-thumbnail .lang-button {
   font-weight: bold; /* podkreśla znaczenie podsumowania. */
 } /* kończy styl końcowego wyniku. */
 
+.completion-stat { /* grupuje dodatkowe statystyki ukończonego poziomu. */
+  margin: 8px 0; /* zachowuje równy odstęp między czasem, monetami i wynikiem. */
+  color: #e4e5f2; /* utrzymuje czytelny tekst na ciemnej karcie. */
+  font-size: 1.05rem; /* wyróżnia szczegóły bez przytłaczania nagłówka. */
+} /* kończy styl statystyk poziomu. */
+
+.completion-stars { /* wyróżnia ocenę gwiazdkową ukończonego poziomu. */
+  margin: 14px 0; /* oddziela gwiazdki od pozostałych statystyk. */
+  color: #ffdf70; /* nadaje gwiazdkom widoczny złoty kolor. */
+  font-size: 1.8rem; /* powiększa symbole gwiazdek. */
+  letter-spacing: 0.12em; /* rozsuwa gwiazdki, aby łatwo je policzyć. */
+} /* kończy wygląd oceny gwiazdkowej. */
+
+.completion-total[hidden] { /* ukrywa łączny wynik na ekranach pojedynczych poziomów. */
+  display: none; /* pokazuje wynik całej gry tylko po ostatnim poziomie. */
+} /* kończy regułę widoczności łącznego wyniku. */
+
 .victory-button, /* wyróżnia główną akcję ponownego przejścia gry. */
 .victory-menu-button { /* ujednolica wygląd obu akcji na ekranie ukończenia. */
   box-sizing: border-box; /* daje przyciskowi i linkowi takie same wymiary z paddingiem i obramowaniem. */

@@ -23,6 +23,10 @@ const victoryMessage = document.getElementById("victory-message"); // pobiera op
 const victoryScore = document.getElementById("victory-score"); // pobiera miejsce na końcowy wynik.
 const replayButton = document.getElementById("replay-button"); // pobiera przycisk rozpoczęcia całej gry od nowa.
 const victoryMenuButton = document.getElementById("victory-menu-button"); // pobiera link powrotu do menu z ekranu zwycięstwa.
+const completionTime = document.getElementById("completion-time"); // pobiera pole czasu przejścia ukończonego poziomu.
+const completionCoins = document.getElementById("completion-coins"); // pobiera pole zebranych monet ukończonego poziomu.
+const completionStars = document.getElementById("completion-stars"); // pobiera pole oceny gwiazdkowej ukończonego poziomu.
+const completionLevelScore = document.getElementById("completion-level-score"); // pobiera pole punktów zdobytych na ukończonym poziomie.
 
 // ===== TŁUMACZENIA =====
 // Wszystkie napisy w grze, osobno dla każdego języka (pl = polski, en = angielski)
@@ -31,6 +35,7 @@ const translations = {
     points: "Punkty: ",
     level: "Poziom: ",
     best: "Rekord: ",
+    timer: "Czas: ", // podpis licznika czasu aktualnego poziomu.
     controls: "A/D lub strzałki: ruch, spacja: skok",
     mainMenu: "Menu główne",
     touchControls: "Sterowanie dotykowe", // etykieta grupy przycisków dotykowych po polsku.
@@ -38,6 +43,14 @@ const translations = {
     moveRight: "Ruch w prawo", // opis dostępności przycisku ruchu w prawo po polsku.
     jump: "Skok", // opis dostępności przycisku skoku po polsku.
     victoryMessage: "Ukończyłeś wszystkie poziomy!", // gratuluje przejścia całej gry po polsku.
+    levelCompleteTitle: "Poziom ukończony!", // tytuł podsumowania pojedynczego poziomu.
+    levelCompleteMessage: "Świetna robota! Możesz przejść dalej albo wrócić do menu.", // opis po ukończeniu poziomu.
+    completedTime: "Czas przejścia: ", // podpis czasu ukończonego poziomu.
+    completedCoins: "Monety: ", // podpis zebranych monet.
+    completedStars: "Zdobyte gwiazdki: ", // podpis oceny poziomu.
+    completedLevelScore: "Punkty za poziom: ", // podpis punktów zdobytych na poziomie.
+    nextLevel: "Następny poziom", // przechodzi do kolejnej planszy.
+    finishReplay: "Zagraj ponownie", // rozpoczyna grę od początku po finale.
     victoryScore: "Wynik końcowy: ", // podpis sumy punktów po polsku.
     victoryPoints: " pkt", // skrót jednostki punktów na ekranie podsumowania.
     replay: "Zagraj ponownie", // opisuje przycisk ponownego przejścia gry po polsku.
@@ -53,6 +66,7 @@ const translations = {
     points: "Score: ",
     level: "Level: ",
     best: "Best: ",
+    timer: "Time: ", // label for the current level timer.
     controls: "A/D or arrows: move, space: jump",
     mainMenu: "Main menu",
     touchControls: "Touch controls", // label for the touch-control group in English.
@@ -60,6 +74,14 @@ const translations = {
     moveRight: "Move right", // accessible label for the right movement button.
     jump: "Jump", // accessible label for the jump button.
     victoryMessage: "You completed every level!", // congratulates the player for finishing the game.
+    levelCompleteTitle: "Level complete!", // title shown after finishing an individual level.
+    levelCompleteMessage: "Great job! Continue to the next level or return to the menu.", // message shown after a level.
+    completedTime: "Completion time: ", // label for the completed level time.
+    completedCoins: "Coins: ", // label for coins collected on the level.
+    completedStars: "Stars earned: ", // label for the level rating.
+    completedLevelScore: "Level score: ", // label for points earned on this level.
+    nextLevel: "Next level", // starts the next level.
+    finishReplay: "Play again", // starts over after the final level.
     victoryScore: "Final score: ", // labels the total score in English.
     victoryPoints: " pts", // score unit shown on the completion screen.
     replay: "Play again", // labels the button that starts a new full playthrough.
@@ -97,6 +119,9 @@ function setLanguage(language) {
   victoryScore.textContent = t("victoryScore") + score + t("victoryPoints"); // pokazuje wynik bieżącej rozgrywki w aktualnym języku.
   replayButton.textContent = t("replay"); // tłumaczy przycisk rozpoczęcia gry od początku.
   victoryMenuButton.textContent = t("victoryMenu"); // tłumaczy przycisk powrotu do menu.
+  if (levelComplete && !victoryScreen.hidden) { // odświeża napisy podsumowania, jeśli język zmienił się po przejściu poziomu.
+    renderLevelCompletion(); // ponownie pokazuje statystyki w wybranym języku.
+  } // kończy aktualizowanie napisów podsumowania.
 }
 
 // ===== DANE GRY =====
@@ -139,6 +164,11 @@ let currentLevel = 0;  // numer poziomu (0 = pierwszy)
 let startingLevel = 0;
 let levelStartingScore = 0; // wynik na początku poziomu pozwala policzyć punkty zdobyte tylko na nim.
 let levelStartedAt = performance.now(); // mierzy czas poziomu, aby przyznać dodatkowe gwiazdki za szybkość.
+let levelComplete = false; // zatrzymuje grę i otwiera podsumowanie ukończonego poziomu.
+let completedLevelTime = 0; // przechowuje czas właśnie ukończonego poziomu w sekundach.
+let completedLevelStars = 0; // przechowuje liczbę gwiazdek w podsumowaniu poziomu.
+let completedLevelCoins = 0; // przechowuje liczbę zebranych monet w podsumowaniu poziomu.
+let completedLevelScore = 0; // przechowuje punkty zdobyte w ukończonym poziomie.
 let gameOver = false;  // czy gracz przegrał
 let gameWon = false;   // czy gracz wygrał całą grę
 let checkpoint = null; // aktywny punkt kontrolny bieżącego poziomu albo null, gdy go nie ma.
@@ -501,10 +531,20 @@ function nextLevel() {
   const coinStar = coins.every(function (coin) { return coin.collected; }) ? 1 : 0; // przyznaje gwiazdkę za zebranie wszystkich monet.
   const speedStars = elapsedSeconds <= 45 ? 2 : elapsedSeconds <= 90 ? 1 : 0; // przyznaje dodatkowe gwiazdki za szybkie ukończenie.
   const earnedStars = Math.min(3, coinStar + speedStars); // ogranicza ocenę do maksymalnie trzech gwiazdek.
+  completedLevelTime = elapsedSeconds; // zachowuje czas do podsumowania ukończonego poziomu.
+  completedLevelStars = earnedStars; // zachowuje gwiazdki zdobyte w tej próbie.
+  completedLevelCoins = coins.filter(function (coin) { return coin.collected; }).length; // zlicza zebrane monety przed pokazaniem podsumowania.
+  completedLevelScore = levelScore; // zachowuje punkty zdobyte w bieżącym poziomie.
   const levelStarsKey = "levelStars_" + completedLevel; // tworzy osobny klucz pamięci dla gwiazdek poziomu.
   const previousStars = Number(localStorage.getItem(levelStarsKey)); // odczytuje poprzednio zdobyte gwiazdki.
   const bestStars = Number.isInteger(previousStars) && previousStars >= 0 && previousStars <= 3 ? Math.max(previousStars, earnedStars) : earnedStars; // zachowuje najlepszą ocenę bez jej obniżania.
   localStorage.setItem(levelStarsKey, String(bestStars)); // zapisuje najlepszą ocenę poziomu w przeglądarce.
+  const levelBestTimeKey = "levelBestTime_" + completedLevel; // tworzy osobny klucz dla najlepszego czasu poziomu.
+  const savedLevelBestTime = localStorage.getItem(levelBestTimeKey); // odczytuje poprzedni najlepszy czas z pamięci.
+  const previousLevelBestTime = Number(savedLevelBestTime); // zamienia poprzedni czas tekstowy na liczbę sekund.
+  if (savedLevelBestTime === null || !Number.isFinite(previousLevelBestTime) || previousLevelBestTime <= 0 || elapsedSeconds < previousLevelBestTime) { // zachowuje pierwszy lub szybszy poprawny czas ukończenia.
+    localStorage.setItem(levelBestTimeKey, String(elapsedSeconds)); // zapisuje najszybszy czas przejścia tego poziomu.
+  } // kończy aktualizowanie rekordu czasu poziomu.
   const levelBestScoreKey = "levelBestScore_" + completedLevel; // tworzy osobny klucz localStorage dla rekordu poziomu.
   const savedLevelBestScore = localStorage.getItem(levelBestScoreKey); // odczytuje poprzedni zapis rekordu, aby wykryć jego brak.
   const previousLevelBestScore = Number(savedLevelBestScore); // zamienia zapis tekstowy na liczbę do porównania.
@@ -524,10 +564,42 @@ function nextLevel() {
 
   if (currentLevel + 1 >= levels.length) {
     gameWon = true;                  // nie ma więcej poziomów -> wygrana
-  } else {
-    currentLevel++;                  // następny numer poziomu
-    loadLevel(currentLevel);         // ładujemy go
   }
+  levelComplete = true; // wstrzymuje planszę do chwili wybrania kolejnej akcji.
+}
+
+// Zamienia czas w sekundach na czytelny zapis minut i sekund.
+function formatElapsedTime(totalSeconds) { // formatuje licznik i podsumowanie poziomu.
+  const wholeSeconds = Math.floor(Math.max(0, totalSeconds)); // usuwa ułamki sekund i zabezpiecza przed ujemnym czasem.
+  const minutes = Math.floor(wholeSeconds / 60); // oblicza pełne minuty.
+  const seconds = String(wholeSeconds % 60).padStart(2, "0"); // zapisuje sekundy zawsze na dwóch pozycjach.
+  return minutes + ":" + seconds; // zwraca czas w formacie mm:ss.
+} // kończy formatowanie czasu gry.
+
+// Wypełnia ekran podsumowania tekstami i statystykami w aktualnym języku.
+function renderLevelCompletion() { // aktualizuje podsumowanie po ukończeniu poziomu.
+  const isFinalLevel = currentLevel === levels.length - 1; // sprawdza, czy właśnie ukończono ostatni poziom.
+  victoryTitle.textContent = isFinalLevel ? t("wonTitle") : t("levelCompleteTitle"); // dobiera tytuł zwykłego ukończenia albo finału.
+  victoryMessage.textContent = isFinalLevel ? t("victoryMessage") : t("levelCompleteMessage"); // pokazuje informację o kolejnym poziomie lub finale.
+  completionTime.textContent = t("completedTime") + formatElapsedTime(completedLevelTime); // pokazuje czas ostatniego przejścia.
+  completionCoins.textContent = t("completedCoins") + completedLevelCoins + "/" + coins.length; // pokazuje zebrane monety względem całej planszy.
+  completionStars.textContent = t("completedStars") + "★".repeat(completedLevelStars) + "☆".repeat(3 - completedLevelStars); // pokazuje zdobyte oraz niezdobyte gwiazdki.
+  completionLevelScore.textContent = t("completedLevelScore") + completedLevelScore + t("victoryPoints"); // pokazuje punkty zdobyte tylko w tym poziomie.
+  victoryScore.textContent = t("victoryScore") + score + t("victoryPoints"); // przygotowuje także łączny wynik całej gry.
+  victoryScore.hidden = !isFinalLevel; // pokazuje wynik całej gry tylko na ekranie finałowym.
+  replayButton.textContent = isFinalLevel ? t("finishReplay") : t("nextLevel"); // wybiera przycisk następnego poziomu lub ponownej gry.
+} // kończy aktualizowanie ekranu podsumowania.
+
+// Kontynuuje rozgrywkę po zamknięciu podsumowania bieżącego poziomu.
+function continueAfterLevel() { // uruchamia kolejny poziom albo zaczyna grę od początku po finale.
+  victoryScreen.hidden = true; // chowa podsumowanie przed wznowieniem gry.
+  levelComplete = false; // odblokowuje aktualizowanie gry.
+  if (gameWon) { // po ostatnim poziomie przycisk główny rozpoczyna nową grę.
+    replayFromBeginning(); // zaczyna od pierwszego poziomu, nie kasując odblokowań.
+    return; // nie próbuje wczytać poziomu poza końcem listy.
+  } // kończy obsługę finału.
+  currentLevel++; // wybiera następny poziom po zakończonym.
+  loadLevel(currentLevel); // wczytuje następną planszę i zeruje jej licznik czasu.
 }
 
 // Zaczyna grę od nowa
@@ -535,6 +607,7 @@ function restartGame() {
   score = 0;             // zerujemy punkty
   gameOver = false;      // zdejmujemy ekran przegranej
   gameWon = false;       // i ekran wygranej
+  levelComplete = false; // usuwa ekran podsumowania przed ponowną próbą.
   victoryScreen.hidden = true; // ukrywa podsumowanie, jeśli restart nastąpił z poziomu ekranu wygranej.
   currentLevel = startingLevel;
   loadLevel(startingLevel);
@@ -545,6 +618,7 @@ function replayFromBeginning() { // rozpoczyna nową próbę przejścia całej g
   score = 0; // zeruje punkty tylko dla nowej próby.
   gameOver = false; // usuwa stan przegranej.
   gameWon = false; // usuwa stan zwycięstwa.
+  levelComplete = false; // usuwa stan ukończenia poziomu przed nową grą.
   startingLevel = 0; // ustawia pierwszy poziom jako punkt startowy także dla klawisza R.
   currentLevel = 0; // wybiera pierwszy poziom gry.
   victoryScreen.hidden = true; // chowa ekran podsumowania przed ponowną grą.
@@ -828,19 +902,17 @@ function update() {
     respawnAtCheckpoint(); // odradza postać zamiast kończyć grę.
   } // kończy obsługę automatycznego odrodzenia.
   // Po końcu gry klawisz R uruchamia grę od nowa
-  if ((gameOver || gameWon) && keys["KeyR"]) {
+  if ((gameOver || levelComplete) && keys["KeyR"]) { // pozwala zacząć poziom od nowa także z ekranu podsumowania.
     restartGame();
   }
-  // Gdy gra się skończyła: zapisujemy rekord i nic więcej nie liczymy (wszystko stoi)
-  if (gameOver || gameWon) {
+  // Po śmierci lub ukończeniu poziomu zapisujemy rekord i zatrzymujemy symulację.
+  if (gameOver || levelComplete) {
     saveBestScore();
-    if (gameWon && !isLevelThumbnail) { // pokazuje podsumowanie zwycięstwa tylko w pełnej wersji gry.
-      if (victoryScreen.hidden) { // reaguje tylko przy pierwszym pokazaniu podsumowania zwycięstwa.
-        victoryScore.textContent = t("victoryScore") + score + t("victoryPoints"); // zapisuje końcowy wynik przed odsłonięciem panelu.
-        victoryScreen.hidden = false; // odsłania panel z wynikiem i przyciskami po wygranej.
-        replayButton.focus(); // przenosi fokus klawiatury na pierwszą akcję po zakończeniu gry.
-      } // kończy jednorazowe pokazywanie podsumowania.
-    } // kończy wyświetlanie ekranu zwycięstwa.
+    if (levelComplete && !isLevelThumbnail && victoryScreen.hidden) { // pokazuje podsumowanie raz po ukończeniu poziomu w pełnej grze.
+      renderLevelCompletion(); // wstawia czas, monety, punkty i gwiazdki do podsumowania.
+      victoryScreen.hidden = false; // odsłania podsumowanie i akcje dla gracza.
+      replayButton.focus(); // przenosi fokus na kontynuację lub ponowną grę.
+    } // kończy jednorazowe pokazywanie podsumowania.
     return;
   }
   if (checkpointNoticeTimer > 0) { // odlicza czas wyświetlania informacji o punkcie kontrolnym.
@@ -1022,12 +1094,13 @@ function drawPlayer() {
 // Panel z punktami, poziomem i rekordem oraz podpowiedź sterowania
 function drawHud() {
   ctx.fillStyle = "rgba(0, 0, 0, 0.5)";                                 // półprzezroczyste czarne tło panelu
-  ctx.fillRect(10, 10, 170, 96);
+  ctx.fillRect(10, 10, 190, 126); // zwiększa panel, aby zmieścić licznik czasu poziomu.
   ctx.fillStyle = "white";
   ctx.font = "18px Arial";
   ctx.fillText(t("points") + score, 22, 38);                            // "Punkty: ..."
   ctx.fillText(t("level") + (currentLevel + 1) + " / " + levels.length, 22, 64);   // "Poziom: x / 5"
   ctx.fillText(t("best") + bestScore, 22, 90);                          // "Rekord: ..."
+  ctx.fillText(t("timer") + formatElapsedTime((performance.now() - levelStartedAt) / 1000), 22, 116); // pokazuje bieżący czas poziomu.
 
   ctx.font = "16px Arial";
   ctx.fillText(t("controls"), 20, groundY + 32);                        // podpowiedź sterowania na ziemi
@@ -1083,7 +1156,7 @@ langButton.addEventListener("click", function () {
 });
 
 replayButton.addEventListener("click", function () { // rozpoczyna ponownie pełną grę po wybraniu przycisku.
-  replayFromBeginning(); // wraca do pierwszego poziomu i zachowuje zapisane odblokowania.
+  continueAfterLevel(); // przechodzi do następnego poziomu albo zaczyna ponownie po finale.
 }); // kończy obsługę przycisku ponownej gry.
 
 // Odczytujemy zapisany język i ustawiamy go (jeśli nic nie zapisano, zostaje polski)

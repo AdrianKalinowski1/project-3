@@ -27,6 +27,7 @@ const translations = {
     levelCoins: "Monety: ", // początek opisu zebranych monet w języku polskim.
     levelBestScore: "Rekord: ", // początek opisu najlepszego wyniku poziomu po polsku.
     levelPointsUnit: " pkt", // skrót jednostki punktów po polsku.
+    levelBestTime: "Najlepszy czas: ", // podpis najszybszego przejścia poziomu po polsku.
     levelStars: "Gwiazdki: ", // podpis liczby gwiazdek zdobytych za poziom.
     noLevelStars: "brak oceny", // informuje o ukończeniu sprzed wprowadzenia systemu gwiazdek.
     playButton: "Zagraj teraz",
@@ -74,6 +75,7 @@ const translations = {
     levelCoins: "Coins: ", // angielski początek opisu liczby zebranych monet.
     levelBestScore: "Best: ", // angielski początek opisu najlepszego wyniku poziomu.
     levelPointsUnit: " pts", // angielski skrót jednostki punktów.
+    levelBestTime: "Best time: ", // label for the fastest completed level time.
     levelStars: "Stars: ", // label for the number of stars earned on a level.
     noLevelStars: "not rated", // describes levels completed before star ratings were added.
     playButton: "Play now",
@@ -200,6 +202,9 @@ function updateLevelPath() {
     const savedCoins = Number(localStorage.getItem("levelCoins_" + level)); // odczytuje liczbę monet zachowaną po ukończeniu poziomu.
     const savedBestScore = Number(localStorage.getItem("levelBestScore_" + level)); // odczytuje najlepszy wynik punktowy poziomu.
     const hasSavedStats = Number.isInteger(savedCoins) && savedCoins > 0 && Number.isFinite(savedBestScore); // rozpoznaje istniejący zapis ukończonego poziomu.
+    const savedBestTimeText = localStorage.getItem("levelBestTime_" + level); // pobiera zapisany najlepszy czas ukończenia poziomu.
+    const savedBestTime = Number(savedBestTimeText); // zamienia zapis czasu tekstowego na liczbę sekund.
+    const hasBestTime = savedBestTimeText !== null && Number.isFinite(savedBestTime) && savedBestTime > 0; // odrzuca brakujący, błędny lub niepoprawny czas.
     const savedStarsText = localStorage.getItem("levelStars_" + level); // odczytuje zapis gwiazdek, aby odróżnić go od jego braku.
     const savedStars = Number(savedStarsText); // zamienia zapis tekstowy na liczbę gwiazdek.
     const hasStarRating = ["0", "1", "2", "3"].includes(savedStarsText); // akceptuje tylko zapis liczby gwiazdek z zakresu 0–3.
@@ -279,11 +284,24 @@ function updateLevelPath() {
     status.textContent = isCompleted ? "✓" : isUnlocked ? "" : "🔒"; // zachowuje ikonę ukończenia albo kłódki na miniaturze.
     button.querySelector(".level-name").textContent = label; // wpisuje nazwę poziomu do pierwszego wiersza kafelka.
     const starsText = hasStarRating ? "★".repeat(savedStars) + "☆".repeat(3 - savedStars) : translations[currentLanguage].noLevelStars; // tworzy ocenę gwiazdkową albo informację o starszym zapisie.
-    const levelDetailsText = isCompleted && hasSavedStats // statystyki pokazujemy tylko dla ukończonego poziomu z zapisanymi danymi.
-      ? translations[currentLanguage].levelCoins + savedCoins + "/" + savedCoins + "\n" + translations[currentLanguage].levelBestScore + savedBestScore + translations[currentLanguage].levelPointsUnit + "\n" + translations[currentLanguage].levelStars + starsText // pokazuje monety, rekord i gwiazdki w osobnych wierszach.
+    const levelDetailsLines = []; // zbiera dostępne rekordy poziomu do wyświetlenia pod nazwą.
+    if (isCompleted && hasSavedStats) { // dodaje znane statystyki monet i punktów ukończonego poziomu.
+      levelDetailsLines.push(translations[currentLanguage].levelCoins + savedCoins + "/" + savedCoins); // pokazuje liczbę zebranych monet.
+      levelDetailsLines.push(translations[currentLanguage].levelBestScore + savedBestScore + translations[currentLanguage].levelPointsUnit); // pokazuje najlepszy wynik punktowy.
+    } // kończy dodawanie zapisanych punktów i monet.
+    if (isCompleted && hasBestTime) { // pokazuje najszybszy czas, jeśli dostępny jest jego zapis.
+      const bestTimeSeconds = Math.floor(savedBestTime); // wyświetla rekord czasu z dokładnością do pełnej sekundy.
+      const bestTimeLabel = Math.floor(bestTimeSeconds / 60) + ":" + String(bestTimeSeconds % 60).padStart(2, "0"); // formatuje rekord jako minuty i sekundy.
+      levelDetailsLines.push(translations[currentLanguage].levelBestTime + bestTimeLabel); // dodaje rekord czasu do statystyk poziomu.
+    } // kończy dodawanie najlepszego czasu.
+    if (isCompleted && hasStarRating) { // dodaje ocenę gwiazdkową zapisaną dla poziomu.
+      levelDetailsLines.push(translations[currentLanguage].levelStars + starsText); // pokazuje liczbę zdobytych gwiazdek.
+    } // kończy dodawanie gwiazdek.
+    const levelDetailsText = levelDetailsLines.length > 0 // wyświetla tylko statystyki, które mają zapisane wartości.
+      ? levelDetailsLines.join("\n") // rozdziela czas, punkty, monety i gwiazdki na osobne wiersze.
       : isCompleted ? translations[currentLanguage].levelCompleted : ""; // dla starych zapisów wyświetla samo ukończenie, a w innych przypadkach pusty tekst.
     button.querySelector(".level-details").textContent = levelDetailsText; // pokazuje szczegóły pod nazwą poziomu.
-    button.setAttribute("aria-label", button.getAttribute("aria-label") + (isCompleted && hasSavedStats ? ", " + levelDetailsText : "")); // udostępnia zapisane wyniki czytnikom ekranu.
+    button.setAttribute("aria-label", button.getAttribute("aria-label") + (isCompleted && levelDetailsText ? ", " + levelDetailsText : "")); // udostępnia zapisane wyniki czytnikom ekranu.
   }
 
   // Link głównego przycisku zawsze otwiera wybrany poziom.
@@ -304,7 +322,7 @@ function updateSelectedLevel() {
 
 // Synchronizuje mapę, gdy postęp lub wynik zmieni się w innej karcie albo ramce.
 window.addEventListener("storage", function (event) {
-  if (event.key === unlockedLevelKey || (typeof event.key === "string" && (event.key.startsWith("levelStars_") || event.key.startsWith("levelCoins_") || event.key.startsWith("levelBestScore_")))) { // odświeża kartę po odblokowaniu albo zapisaniu statystyk poziomu.
+  if (event.key === unlockedLevelKey || (typeof event.key === "string" && (event.key.startsWith("levelStars_") || event.key.startsWith("levelCoins_") || event.key.startsWith("levelBestScore_") || event.key.startsWith("levelBestTime_")))) { // odświeża kartę po odblokowaniu albo zapisaniu statystyk poziomu.
     updateLevelPath();
   }
 });
